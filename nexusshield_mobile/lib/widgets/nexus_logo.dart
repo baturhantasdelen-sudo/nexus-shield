@@ -39,6 +39,7 @@ class NexusLogo extends StatelessWidget {
     this.maxWidth,
     this.variant = NexusLogoVariant.lockup,
     this.showFallbackIcon = true,
+    this.vibrantOnDark = false,
   });
 
   /// Nominal lockup height on a 390pt shortest-side reference.
@@ -46,6 +47,7 @@ class NexusLogo extends StatelessWidget {
   final double? maxWidth;
   final NexusLogoVariant variant;
   final bool showFallbackIcon;
+  final bool vibrantOnDark;
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +71,7 @@ class NexusLogo extends StatelessWidget {
           width: box.width,
           height: box.height,
           showFallbackIcon: showFallbackIcon,
+          vibrantOnDark: vibrantOnDark,
         ),
       );
     }
@@ -87,6 +90,7 @@ class NexusLogo extends StatelessWidget {
         width: box.width,
         height: box.height,
         showFallbackIcon: showFallbackIcon,
+        vibrantOnDark: vibrantOnDark,
       ),
     );
   }
@@ -208,16 +212,18 @@ class _LogoImage extends StatelessWidget {
     required this.width,
     required this.height,
     required this.showFallbackIcon,
+    this.vibrantOnDark = false,
   });
 
   final String asset;
   final double width;
   final double height;
   final bool showFallbackIcon;
+  final bool vibrantOnDark;
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
+    final image = Image.asset(
       asset,
       width: width,
       height: height,
@@ -236,6 +242,20 @@ class _LogoImage extends StatelessWidget {
           color: Colors.white70,
         );
       },
+    );
+
+    if (!vibrantOnDark) {
+      return image;
+    }
+
+    return ColorFiltered(
+      colorFilter: const ColorFilter.matrix(<double>[
+        1.04, 0, 0, 0, 4,
+        0, 1.04, 0, 0, 4,
+        0, 0, 1.06, 0, 6,
+        0, 0, 0, 1, 0,
+      ]),
+      child: image,
     );
   }
 }
