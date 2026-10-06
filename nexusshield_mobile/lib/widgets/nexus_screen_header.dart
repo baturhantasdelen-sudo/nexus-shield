@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import 'nexus_logo.dart';
 
-/// Header lockup: fixed max width with pixel-snapped logo box inside.
 class NexusScreenHeader extends StatelessWidget {
   const NexusScreenHeader({
     super.key,
@@ -39,7 +38,7 @@ class NexusScreenHeader extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 0.2,
+                letterSpacing: 0.15,
                 height: 1.2,
               ),
         ),
@@ -66,11 +65,12 @@ class _BrandTagline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelLarge?.copyWith(
-          fontSize: 13.5,
+    final baseStyle = Theme.of(context).textTheme.labelLarge?.copyWith(
+          fontSize: 13,
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.85,
-          height: 1.2,
+          letterSpacing: 0.65,
+          height: 1.15,
+          fontFeatures: const [FontFeature.tabularFigures()],
         );
 
     return SizedBox(
@@ -81,19 +81,21 @@ class _BrandTagline extends StatelessWidget {
             child: ShaderMask(
               blendMode: BlendMode.srcIn,
               shaderCallback: (bounds) => const LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
                 colors: [
-                  Color(0xFFE2E8F0),
+                  Color(0xFFF1F5F9),
                   NexusBrand.cyberCyan,
                   NexusBrand.neonGreen,
                 ],
-                stops: [0.0, 0.55, 1.0],
+                stops: [0.0, 0.52, 1.0],
               ).createShader(bounds),
               child: Text(
                 NexusBrand.brandTagline,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 softWrap: false,
-                style: style,
+                style: baseStyle,
               ),
             ),
           ),

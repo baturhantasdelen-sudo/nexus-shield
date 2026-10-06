@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../theme/app_theme.dart';
 
@@ -8,11 +9,11 @@ enum NexusLogoVariant {
   /// Shield + NEXUS SHIELD + AI • API • SEC
   lockup,
 
-  /// Shield emblem only — square asset, no crop.
+  /// Shield emblem only.
   emblem,
 }
 
-/// Snaps logical size to the physical pixel grid (reduces blur from fractional layout).
+/// Snaps logical layout size to the device pixel grid.
 double snapToDevicePixel(double logical, double devicePixelRatio) {
   if (logical <= 0 || devicePixelRatio <= 0) {
     return logical;
@@ -20,7 +21,7 @@ double snapToDevicePixel(double logical, double devicePixelRatio) {
   return (logical * devicePixelRatio).round() / devicePixelRatio;
 }
 
-/// Transparent brand assets with fixed, pixel-aligned layout boxes.
+/// Vector brand assets — crisp at any density.
 class NexusLogo extends StatelessWidget {
   const NexusLogo({
     super.key,
@@ -36,8 +37,11 @@ class NexusLogo extends StatelessWidget {
   final NexusLogoVariant variant;
   final bool showFallbackIcon;
 
-  /// Must match exported `nexus_logo.png` (see `tool/process_nexus_logo.py`).
-  static const lockupAspect = 1024 / 775;
+  /// Matches `assets/vector/nexus_logo.svg` viewBox (360×132).
+  static const lockupAspect = 360 / 132;
+
+  /// Matches `assets/vector/nexus_emblem.svg` viewBox (100×110).
+  static const emblemAspect = 100 / 110;
 
   @override
   Widget build(BuildContext context) {
@@ -52,14 +56,14 @@ class NexusLogo extends StatelessWidget {
         math.min(rawSide, widthCap).clamp(24.0, 128.0),
         dpr,
       );
+      final height = snapToDevicePixel(side / emblemAspect, dpr);
       return _LogoFrame(
         width: side,
-        height: side,
-        child: _LogoImage(
-          asset: NexusBrand.emblemAsset,
+        height: height,
+        child: _LogoVector(
+          asset: NexusBrand.logoEmblemVector,
           width: side,
-          height: side,
-          devicePixelRatio: dpr,
+          height: height,
           showFallbackIcon: showFallbackIcon,
         ),
       );
@@ -77,18 +81,17 @@ class NexusLogo extends StatelessWidget {
     return _LogoFrame(
       width: width,
       height: height,
-      child: _LogoImage(
-        asset: NexusBrand.logoAsset,
+      child: _LogoVector(
+        asset: NexusBrand.logoLockupVector,
         width: width,
         height: height,
-        devicePixelRatio: dpr,
         showFallbackIcon: showFallbackIcon,
       ),
     );
   }
 }
 
-/// Centered emblem for the protection score ring — fixed square, pixel-snapped.
+/// Centered vector emblem inside the protection score ring.
 class NexusRingEmblem extends StatelessWidget {
   const NexusRingEmblem({
     super.key,
@@ -101,7 +104,6 @@ class NexusRingEmblem extends StatelessWidget {
   final bool busy;
   final Color? busyColor;
 
-  /// Share of ring diameter used for the emblem box.
   static const emblemScale = 0.22;
 
   @override
@@ -111,25 +113,25 @@ class NexusRingEmblem extends StatelessWidget {
       (ringDiameter * emblemScale).clamp(40.0, 56.0),
       dpr,
     );
+    final height = snapToDevicePixel(side / NexusLogo.emblemAspect, dpr);
 
     return _LogoFrame(
       width: side,
-      height: side,
+      height: height,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
         children: [
-          _LogoImage(
-            asset: NexusBrand.emblemAsset,
+          _LogoVector(
+            asset: NexusBrand.logoEmblemVector,
             width: side,
-            height: side,
-            devicePixelRatio: dpr,
+            height: height,
             showFallbackIcon: false,
           ),
           if (busy)
             SizedBox(
               width: side,
-              height: side,
+              height: height,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
                 color: (busyColor ?? NexusBrand.cyberCyan).withValues(alpha: 0.88),
@@ -162,44 +164,36 @@ class _LogoFrame extends StatelessWidget {
   }
 }
 
-class _LogoImage extends StatelessWidget {
-  const _LogoImage({
+class _LogoVector extends StatelessWidget {
+  const _LogoVector({
     required this.asset,
     required this.width,
     required this.height,
-    required this.devicePixelRatio,
     required this.showFallbackIcon,
   });
 
   final String asset;
   final double width;
   final double height;
-  final double devicePixelRatio;
   final bool showFallbackIcon;
 
   @override
   Widget build(BuildContext context) {
-    final cacheW = (width * devicePixelRatio).round().clamp(1, 4096);
-    final cacheH = (height * devicePixelRatio).round().clamp(1, 4096);
-
-    return Image.asset(
+    return SvgPicture.asset(
       asset,
       width: width,
       height: height,
       fit: BoxFit.contain,
       alignment: Alignment.center,
-      filterQuality: FilterQuality.high,
-      isAntiAlias: true,
-      gaplessPlayback: true,
-      cacheWidth: cacheW,
-      cacheHeight: cacheH,
+      clipBehavior: Clip.hardEdge,
+      placeholderBuilder: (context) => SizedBox(width: width, height: height),
       errorBuilder: (context, error, stackTrace) {
         if (!showFallbackIcon) {
           return SizedBox(width: width, height: height);
         }
         return Icon(
           Icons.shield,
-          size: snapToDevicePixel(height * 0.82, devicePixelRatio),
+          size: height * 0.82,
           color: Colors.white70,
         );
       },
