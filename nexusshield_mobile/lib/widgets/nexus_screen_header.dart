@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import 'nexus_logo.dart';
 
+/// Text-only screen header — brand lockup lives on the dashboard banner.
 class NexusScreenHeader extends StatelessWidget {
   const NexusScreenHeader({
     super.key,
@@ -13,24 +13,13 @@ class NexusScreenHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
 
-  static const _logoDesignSize = 52.0;
-  static const _horizontalInset = 24.0;
-
   @override
   Widget build(BuildContext context) {
-    final maxLogoWidth = (MediaQuery.sizeOf(context).width - _horizontalInset * 2)
-        .clamp(160.0, 420.0);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        NexusLogo(
-          size: _logoDesignSize,
-          maxWidth: maxLogoWidth,
-        ),
-        const SizedBox(height: 10),
         const _BrandTagline(),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Text(
           title,
           maxLines: 2,

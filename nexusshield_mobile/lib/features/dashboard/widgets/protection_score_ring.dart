@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/models/protection_score.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/nexus_logo.dart';
-
 class ProtectionScoreRing extends StatelessWidget {
   const ProtectionScoreRing({
     super.key,
@@ -52,14 +50,18 @@ class ProtectionScoreRing extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 2),
-                    child: NexusRingEmblem(
-                      ringDiameter: diameter,
-                      busy: busy,
-                      busyColor: _accent,
+                  if (busy)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: SizedBox(
+                        width: 26,
+                        height: 26,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: _accent.withValues(alpha: 0.9),
+                        ),
+                      ),
                     ),
-                  ),
                   Text(
                     '${score.score}',
                     style: TextStyle(
