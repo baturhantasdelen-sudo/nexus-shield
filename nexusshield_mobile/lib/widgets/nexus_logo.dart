@@ -26,7 +26,7 @@ class NexusLogo extends StatelessWidget {
   final NexusLogoVariant variant;
   final bool showFallbackIcon;
 
-  static const lockupAspect = 698 / 606;
+  static const lockupAspect = 346 / 262;
 
   @override
   Widget build(BuildContext context) {

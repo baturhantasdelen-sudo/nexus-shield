@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// NexusShield design tokens — single source of truth for UI/UX consistency.
 abstract final class NexusBrand {
-  static const logoAsset = 'assets/images/nexusshield-logo.png';
+  static const logoAsset = 'assets/icon/nexus_logo.png';
 
   static const deepSlate = Color(0xFF0B1220);
   static const glassPanel = Color(0xFF1E293B);
