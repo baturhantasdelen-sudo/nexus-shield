@@ -13,6 +13,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pump(const Duration(milliseconds: 500));
 
+    expect(find.text('Personal Guard'), findsOneWidget);
     expect(find.textContaining('Güvenlik Panosu'), findsOneWidget);
     expect(find.textContaining('Koruma skoru'), findsOneWidget);
     expect(find.textContaining('PII Items Masked'), findsOneWidget);

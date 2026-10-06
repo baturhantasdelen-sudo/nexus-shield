@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import 'nexus_logo.dart';
 
+/// Brief in-app fade while Rust/telemetry init; brand logo is native splash only.
 class NexusSplashOverlay extends StatefulWidget {
   const NexusSplashOverlay({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 1400),
+    this.duration = const Duration(milliseconds: 900),
   });
 
   final Widget child;
@@ -30,8 +30,6 @@ class _NexusSplashOverlayState extends State<NexusSplashOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -40,34 +38,31 @@ class _NexusSplashOverlayState extends State<NexusSplashOverlay> {
           AnimatedOpacity(
             opacity: _showSplash ? 1 : 0,
             duration: const Duration(milliseconds: 350),
-            child: Container(
+            child: ColoredBox(
               color: NexusBrand.deepSlate,
-              alignment: Alignment.center,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: NexusLogo(
-                      size: 112,
-                      maxWidth: width * 0.86,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Personal Guard',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: NexusBrand.metallicLight,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.4,
+                          ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Personal AI Guard',
-                    style: TextStyle(color: NexusBrand.muted.withValues(alpha: 0.9)),
-                  ),
-                  const SizedBox(height: 24),
-                  const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white70,
+                    const SizedBox(height: 24),
+                    const SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white70,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

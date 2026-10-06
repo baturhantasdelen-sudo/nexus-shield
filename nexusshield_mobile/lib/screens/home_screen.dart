@@ -6,7 +6,6 @@ import '../models/telemetry_stats.dart';
 import '../providers/shield_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/live_playground_panel.dart';
-import '../widgets/nexus_brand_welcome.dart';
 import '../widgets/telemetry_card.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -28,7 +27,6 @@ class HomeScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Center(child: NexusBrandWelcome()),
                 const DashboardScreen(),
                 const SizedBox(height: 24),
                 Text(
