@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 
 /// NexusShield design tokens — single source of truth for UI/UX consistency.
 abstract final class NexusBrand {
-  static const logoLockupVector = 'assets/vector/nexus_logo.svg';
-  static const logoEmblemVector = 'assets/vector/nexus_emblem.svg';
+  /// Bundled PNG lockup — intrinsic 1024×775 (see [NexusLogoIntrinsic]).
+  static const logoLockupAsset = 'assets/icon/nexus_logo.png';
+
+  /// Bundled PNG emblem — intrinsic 1024×1024.
+  static const logoEmblemAsset = 'assets/icon/nexus_emblem.png';
   static const brandTagline = 'Personal Guard Nexus Shield';
 
   static const deepSlate = Color(0xFF0B1220);

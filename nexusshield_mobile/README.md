@@ -18,7 +18,7 @@ dart run flutter_native_splash:create
 
 (`flutter pub run …` still works; `dart run` is the current Flutter entry.)
 
-In-app branding uses vector assets under `assets/vector/` (`nexus_logo.svg`, `nexus_emblem.svg`) via `flutter_svg`. Native launcher icons and splash colors are generated from committed platform rasters (`dart run flutter_launcher_icons`, `dart run flutter_native_splash:create`); splash background is `#0B1220`.
+In-app branding uses committed PNGs under `assets/icon/` (`nexus_logo.png` 1024×775, `nexus_emblem.png` 1024×1024) with fixed aspect ratio in `NexusLogo` — do not regenerate or process these at runtime. Native launcher icons use platform rasters (`dart run flutter_launcher_icons`); splash background is `#0B1220`.
 
 ## Android Play Console (AAB)
 

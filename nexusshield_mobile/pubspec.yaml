@@ -38,7 +38,6 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   local_auth: ^3.0.2
   flutter_rust_bridge: ^2.13.0
-  flutter_svg: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -81,7 +80,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/vector/
+    - assets/icon/nexus_logo.png
+    - assets/icon/nexus_emblem.png
     - assets/threat_intel/scam_numbers.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
