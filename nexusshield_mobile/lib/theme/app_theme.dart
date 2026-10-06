@@ -1,47 +1,50 @@
 import 'package:flutter/material.dart';
 
-/// NexusShield design tokens — single source of truth for UI/UX consistency.
+/// NexusShield design tokens — aligned with lockup navy / teal / gold accents.
 abstract final class NexusBrand {
-  /// Bundled PNG lockup — intrinsic 1024×775 (see [NexusLogoIntrinsic]).
   static const logoLockupAsset = 'assets/icon/nexus_logo.png';
-
-  /// Bundled PNG emblem — intrinsic 1024×1024.
   static const logoEmblemAsset = 'assets/icon/nexus_emblem.png';
   static const brandTagline = 'Personal Guard Nexus Shield';
 
-  static const deepSlate = Color(0xFF0B1220);
-  static const glassPanel = Color(0xFF1E293B);
-  static const glassPanelOpacity = 0.92;
+  /// Core shell — deep navy from lockup (#0B132B family).
+  static const deepNavy = Color(0xFF0B132B);
+  static const deepSlate = deepNavy;
+  static const surfaceElevated = Color(0xFF121C32);
+  static const glassPanel = Color(0xFF172240);
+  static const glassPanelOpacity = 0.88;
 
-  static const neonGreen = Color(0xFF00FF9D);
-  static const cyberCyan = Color(0xFF00F0FF);
-  static const amber = Color(0xFFFFB800);
-  static const alertRed = Color(0xFFFF3B30);
+  static const metallicLight = Color(0xFFE8EEF4);
+  static const tealAccent = Color(0xFF5EEAD4);
+  static const cyberCyan = Color(0xFF67E8F9);
+  static const neonGreen = Color(0xFF2DD4BF);
+  static const goldAccent = Color(0xFFEAB308);
+  static const amber = goldAccent;
+  static const alertRed = Color(0xFFF87171);
   static const muted = Color(0xFF94A3B8);
 
-  static const cardRadius = 16.0;
-  static Border cyberBorder({double opacity = 0.12, double width = 1}) =>
-      Border.all(color: cyberCyan.withValues(alpha: opacity), width: width);
+  static const cardRadius = 20.0;
+  static Border cyberBorder({double opacity = 0.1, double width = 1}) =>
+      Border.all(color: tealAccent.withValues(alpha: opacity), width: width);
 }
 
 ThemeData buildAppTheme() {
   return ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: NexusBrand.deepSlate,
+    scaffoldBackgroundColor: NexusBrand.deepNavy,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: NexusBrand.neonGreen,
+      seedColor: NexusBrand.tealAccent,
       brightness: Brightness.dark,
-      primary: NexusBrand.neonGreen,
+      primary: NexusBrand.tealAccent,
       secondary: NexusBrand.cyberCyan,
       surface: NexusBrand.glassPanel,
       error: NexusBrand.alertRed,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: NexusBrand.deepSlate,
-      foregroundColor: Colors.white,
+      backgroundColor: NexusBrand.deepNavy,
+      foregroundColor: NexusBrand.metallicLight,
       elevation: 0,
-      centerTitle: false,
+      centerTitle: true,
     ),
     cardTheme: CardThemeData(
       color: Colors.transparent,
@@ -51,15 +54,18 @@ ThemeData buildAppTheme() {
       ),
     ),
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white, height: 1.4),
-      bodyMedium: TextStyle(color: Colors.white, height: 1.4),
-      titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      bodyLarge: TextStyle(color: NexusBrand.metallicLight, height: 1.4),
+      bodyMedium: TextStyle(color: NexusBrand.metallicLight, height: 1.4),
+      titleLarge: TextStyle(
+        color: NexusBrand.metallicLight,
+        fontWeight: FontWeight.bold,
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF1A2438),
+      fillColor: NexusBrand.surfaceElevated,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide.none,
       ),
       labelStyle: const TextStyle(color: NexusBrand.muted),
@@ -68,38 +74,49 @@ ThemeData buildAppTheme() {
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.selected)
-            ? NexusBrand.neonGreen
+            ? NexusBrand.tealAccent
             : NexusBrand.muted,
       ),
       trackColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.selected)
-            ? NexusBrand.neonGreen.withValues(alpha: 0.35)
+            ? NexusBrand.tealAccent.withValues(alpha: 0.32)
             : const Color(0xFF334155),
-      ),
-      trackOutlineColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected)
-            ? NexusBrand.cyberCyan.withValues(alpha: 0.35)
-            : NexusBrand.muted.withValues(alpha: 0.4),
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: NexusBrand.glassPanel.withValues(alpha: 0.95),
-      indicatorColor: NexusBrand.neonGreen.withValues(alpha: 0.15),
-      labelTextStyle: WidgetStateProperty.all(
-        const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-      ),
+      height: 68,
+      backgroundColor: NexusBrand.surfaceElevated.withValues(alpha: 0.98),
+      indicatorColor: NexusBrand.tealAccent.withValues(alpha: 0.22),
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.black.withValues(alpha: 0.35),
+      elevation: 12,
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+          color: selected ? NexusBrand.tealAccent : NexusBrand.muted,
+        );
+      }),
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        final selected = states.contains(WidgetState.selected);
+        return IconThemeData(
+          color: selected ? NexusBrand.tealAccent : NexusBrand.muted,
+          size: 24,
+        );
+      }),
     ),
   );
 }
 
-/// Glassmorphic cyber card used across dashboard, vault, playground, matrix.
+/// Soft elevated surface — warm corners, subtle depth (replaces harsh cyber panels).
 class CyberCard extends StatelessWidget {
   const CyberCard({
     super.key,
     required this.child,
     this.padding,
     this.borderColor,
-    this.borderOpacity = 0.12,
+    this.borderOpacity = 0.08,
     this.backgroundOpacity = NexusBrand.glassPanelOpacity,
     this.glowColor,
     this.glowStrength = 0,
@@ -115,32 +132,23 @@ class CyberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final border = borderColor ?? NexusBrand.cyberCyan;
+    final border = borderColor ?? NexusBrand.tealAccent;
     return Material(
       color: NexusBrand.glassPanel.withValues(alpha: backgroundOpacity),
-      borderRadius: BorderRadius.circular(NexusBrand.cardRadius),
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.35),
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(NexusBrand.cardRadius),
+        side: BorderSide(
+          color: border.withValues(alpha: borderOpacity),
+          width: 1,
+        ),
+      ),
       clipBehavior: Clip.antiAlias,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(NexusBrand.cardRadius),
-          border: Border.all(
-            color: border.withValues(alpha: borderOpacity),
-            width: 1,
-          ),
-          boxShadow: glowStrength > 0 && glowColor != null
-              ? [
-                  BoxShadow(
-                    color: glowColor!.withValues(alpha: glowStrength),
-                    blurRadius: 18,
-                    spreadRadius: 0,
-                  ),
-                ]
-              : null,
-        ),
-        child: Padding(
-          padding: padding ?? EdgeInsets.zero,
-          child: child,
-        ),
+      child: Padding(
+        padding: padding ?? EdgeInsets.zero,
+        child: child,
       ),
     );
   }

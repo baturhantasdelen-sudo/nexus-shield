@@ -26,22 +26,24 @@ class SecurityStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return CyberCard(
       borderColor: _accent,
-      borderOpacity: 0.35,
+      borderOpacity: 0.18,
       glowColor: _accent,
-      glowStrength: health.riskLevel == RiskLevel.secure ? 0.12 : 0.06,
-      padding: const EdgeInsets.all(14),
-      child: InkWell(
-        onTap: onTap,
-        child: Row(
+      glowStrength: health.riskLevel == RiskLevel.secure ? 0.08 : 0.04,
+      padding: const EdgeInsets.all(16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(NexusBrand.cardRadius),
+          onTap: onTap,
+          child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: _accent.withValues(alpha: 0.12),
-              border: Border.all(color: _accent.withValues(alpha: 0.35)),
+              borderRadius: BorderRadius.circular(16),
+              color: _accent.withValues(alpha: 0.1),
             ),
             child: Icon(icon, color: _accent, size: 24),
           ),
@@ -87,6 +89,7 @@ class SecurityStatusCard extends StatelessWidget {
             ),
           ),
         ],
+          ),
         ),
       ),
     );

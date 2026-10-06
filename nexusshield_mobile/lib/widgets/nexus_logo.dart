@@ -15,7 +15,7 @@ enum NexusLogoVariant {
 /// Frozen intrinsic pixel sizes of bundled PNGs — do not alter assets programmatically.
 abstract final class NexusLogoIntrinsic {
   static const lockupWidthPx = 1024;
-  static const lockupHeightPx = 775;
+  static const lockupHeightPx = 888;
   static const emblemWidthPx = 1024;
   static const emblemHeightPx = 1024;
 

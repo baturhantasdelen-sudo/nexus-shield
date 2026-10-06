@@ -44,7 +44,7 @@ class ProtectionScoreRing extends StatelessWidget {
                 painter: _RingPainter(
                   progress: progress,
                   accent: _accent,
-                  trackColor: Colors.white.withValues(alpha: 0.08),
+                  trackColor: NexusBrand.tealAccent.withValues(alpha: 0.12),
                 ),
               ),
               Column(

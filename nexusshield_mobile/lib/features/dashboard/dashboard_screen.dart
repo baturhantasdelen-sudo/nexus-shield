@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/shield_providers.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/nexus_brand_banner.dart';
 import '../../widgets/nexus_screen_header.dart';
 import '../ai_shield/ai_shield_screen.dart';
 import '../call_fraud/call_fraud_screen.dart';
@@ -40,7 +39,6 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const NexusBrandBanner(),
         const NexusScreenHeader(
           title: 'Güvenlik Panosu',
           subtitle: 'Canlı koruma skoru • modüler güvenlik durumu',

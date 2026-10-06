@@ -51,21 +51,21 @@ flutter_launcher_icons:
   ios: true
   image_path: ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
   min_sdk_android: 21
-  adaptive_icon_background: "#0B1220"
+  adaptive_icon_background: "#0B132B"
   adaptive_icon_foreground: android/app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
   remove_alpha_ios: true
-  background_color_ios: "#0B1220"
+  background_color_ios: "#0B132B"
   web:
     generate: false
 
 flutter_native_splash:
-  color: "#0B1220"
+  color: "#0B132B"
   android: true
   ios: true
   web: false
   android_12:
-    color: "#0B1220"
-    icon_background_color: "#0B1220"
+    color: "#0B132B"
+    icon_background_color: "#0B132B"
 
 
 # For information on the generic Dart part of this file, see the

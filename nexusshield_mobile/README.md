@@ -18,7 +18,7 @@ dart run flutter_native_splash:create
 
 (`flutter pub run …` still works; `dart run` is the current Flutter entry.)
 
-In-app branding uses committed PNGs under `assets/icon/` (`nexus_logo.png` 1024×775, `nexus_emblem.png` 1024×1024) with fixed aspect ratio in `NexusLogo` — do not regenerate or process these at runtime. Native launcher icons use platform rasters (`dart run flutter_launcher_icons`); splash background is `#0B1220`.
+In-app branding uses committed PNGs under `assets/icon/` (`nexus_logo.png` 1024×888 lockup, `nexus_emblem.png` 1024×1024) via `NexusLogo` (`BoxFit.contain`, `FilterQuality.high`). UI shell uses `#0B132B` with teal/gold accents from the lockup palette.
 
 ## Android Play Console (AAB)
 
