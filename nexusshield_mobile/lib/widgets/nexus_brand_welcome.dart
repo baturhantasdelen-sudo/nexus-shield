@@ -8,8 +8,8 @@ class NexusBrandWelcome extends StatelessWidget {
   const NexusBrandWelcome({super.key});
 
   /// Nominal lockup height (390pt reference) — slightly larger than inline headers.
-  static const _logoDesignHeight = 70.0;
-  static const _maxLogoWidth = 336.0;
+  static const _logoDesignHeight = 82.0;
+  static const _maxLogoWidth = 360.0;
   static const _horizontalInset = 20.0;
 
   @override
@@ -18,7 +18,7 @@ class NexusBrandWelcome extends StatelessWidget {
     final maxWidth = widthBudget.clamp(200.0, _maxLogoWidth);
 
     return Padding(
-      padding: const EdgeInsets.only(top: 6, bottom: 22),
+      padding: const EdgeInsets.only(top: 8, bottom: 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -67,7 +67,7 @@ class _ProminentLockupGlow extends StatelessWidget {
       children: [
         Container(
           width: maxWidth * 0.92,
-          height: NexusBrandWelcome._logoDesignHeight * 1.15,
+          height: NexusBrandWelcome._logoDesignHeight * 1.12,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
             gradient: RadialGradient(
