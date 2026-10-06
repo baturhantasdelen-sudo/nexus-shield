@@ -21,6 +21,7 @@ if not str(DEFAULT_SRC):
 
 OUT_LOCKUP = ROOT / "assets" / "icon" / "nexus_logo.png"
 OUT_EMBLEM = ROOT / "assets" / "icon" / "nexus_emblem.png"
+LOCKUP_MIN_WIDTH = 1024
 
 
 def _checker_colors(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -126,25 +127,36 @@ def _crop_rgba(rgba: np.ndarray, pad: int = 4) -> np.ndarray:
     return rgba[top : bottom + 1, left : right + 1]
 
 
+def _upscale_lockup(img: Image.Image, min_width: int = LOCKUP_MIN_WIDTH) -> Image.Image:
+    w, h = img.size
+    if w >= min_width:
+        return img
+    scale = min_width / w
+    nw, nh = int(round(w * scale)), int(round(h * scale))
+    return img.resize((nw, nh), Image.Resampling.LANCZOS)
+
+
+def _finalize_lockup(rgba: np.ndarray) -> Image.Image:
+    cropped = _crop_rgba(rgba)
+    out = Image.fromarray(cropped, "RGBA")
+    return _upscale_lockup(out)
+
+
 def build_lockup(src: Path, dest: Path = OUT_LOCKUP) -> tuple[int, int]:
     im = Image.open(src)
     if im.mode == "RGBA":
         rgba = np.array(im)
-        rgb = rgba[:, :, :3]
         if rgba[:, :, 3].min() < 255:
-            # Already has transparency — only crop.
-            cropped = _crop_rgba(rgba)
-            out = Image.fromarray(cropped, "RGBA")
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            out.save(dest, "PNG", compress_level=1)
-            return out.size
+            out = _finalize_lockup(rgba)
+        else:
+            rgb = rgba[:, :, :3]
+            alpha = _drop_speckle_alpha(_flood_alpha(rgb))
+            out = _finalize_lockup(np.dstack([rgb, alpha]))
     else:
         rgb = np.array(im.convert("RGB"))
+        alpha = _drop_speckle_alpha(_flood_alpha(rgb))
+        out = _finalize_lockup(np.dstack([rgb, alpha]))
 
-    alpha = _drop_speckle_alpha(_flood_alpha(rgb))
-    rgba = np.dstack([rgb, alpha])
-    cropped = _crop_rgba(rgba)
-    out = Image.fromarray(cropped, "RGBA")
     dest.parent.mkdir(parents=True, exist_ok=True)
     out.save(dest, "PNG", compress_level=1)
     _write_emblem(out, OUT_EMBLEM)

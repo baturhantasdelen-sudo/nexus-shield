@@ -51,22 +51,35 @@ class ProtectionScoreRing extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (busy)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: _accent.withValues(alpha: 0.9),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(
+                          NexusBrand.emblemAsset,
+                          width: diameter * 0.24,
+                          height: diameter * 0.24,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          isAntiAlias: true,
                         ),
-                      ),
+                        if (busy)
+                          SizedBox(
+                            width: diameter * 0.24,
+                            height: diameter * 0.24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: _accent.withValues(alpha: 0.85),
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                   Text(
                     '${score.score}',
                     style: TextStyle(
-                      fontSize: 52,
+                      fontSize: 48,
                       fontWeight: FontWeight.w700,
                       color: _accent,
                       height: 1,

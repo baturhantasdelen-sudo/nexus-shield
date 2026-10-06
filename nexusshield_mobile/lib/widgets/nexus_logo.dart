@@ -26,7 +26,8 @@ class NexusLogo extends StatelessWidget {
   final NexusLogoVariant variant;
   final bool showFallbackIcon;
 
-  static const lockupAspect = 346 / 262;
+  /// Must match exported `nexus_logo.png` width / height (regenerate via tool/process_nexus_logo.py).
+  static const lockupAspect = 1024 / 775;
 
   @override
   Widget build(BuildContext context) {
@@ -34,21 +35,15 @@ class NexusLogo extends StatelessWidget {
     final height = (size * (shortest / 390.0)).clamp(size * 0.72, size * 1.4);
     final cap = maxWidth ?? MediaQuery.sizeOf(context).width * 0.92;
 
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+
     if (variant == NexusLogoVariant.emblem) {
       final side = height.clamp(24.0, cap);
-      return SizedBox(
+      return _asset(
+        asset: NexusBrand.emblemAsset,
         width: side,
         height: side,
-        child: ClipRect(
-          child: Align(
-            alignment: Alignment.topCenter,
-            heightFactor: 0.68,
-            child: _asset(
-              width: side,
-              height: side / 0.68,
-            ),
-          ),
-        ),
+        dpr: dpr,
       );
     }
 
@@ -57,18 +52,30 @@ class NexusLogo extends StatelessWidget {
       width = cap;
     }
     final resolvedHeight = width / lockupAspect;
-    return _asset(width: width, height: resolvedHeight);
+    return _asset(
+      asset: NexusBrand.logoAsset,
+      width: width,
+      height: resolvedHeight,
+      dpr: dpr,
+    );
   }
 
-  Widget _asset({required double width, required double height}) {
+  Widget _asset({
+    required String asset,
+    required double width,
+    required double height,
+    required double dpr,
+  }) {
     return Image.asset(
-      NexusBrand.logoAsset,
+      asset,
       width: width,
       height: height,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
       isAntiAlias: true,
       gaplessPlayback: true,
+      cacheWidth: (width * dpr).round().clamp(1, 4096),
+      cacheHeight: (height * dpr).round().clamp(1, 4096),
       errorBuilder: (context, error, stackTrace) {
         if (!showFallbackIcon) {
           return SizedBox(width: width, height: height);
