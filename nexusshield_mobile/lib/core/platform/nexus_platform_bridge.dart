@@ -42,4 +42,66 @@ abstract final class NexusPlatformBridge {
     );
     return Map<String, dynamic>.from(result ?? const {});
   }
+
+  static Future<void> openAppSettings(String packageId) async {
+    await _method.invokeMethod<void>('openAppSettings', {
+      'packageId': packageId,
+    });
+  }
+
+  static Future<void> setPackageNetworkBlocked({
+    required String packageId,
+    required bool blocked,
+  }) async {
+    await _method.invokeMethod<void>('setPackageNetworkBlocked', {
+      'packageId': packageId,
+      'blocked': blocked,
+    });
+  }
+
+  static Future<Map<String, dynamic>> getTrafficGuardSnapshot() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getTrafficGuardSnapshot',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<Map<String, dynamic>> startLocalTrafficGuard() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'startLocalTrafficGuard',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<void> stopLocalTrafficGuard() async {
+    await _method.invokeMethod<void>('stopLocalTrafficGuard');
+  }
+
+  static Future<Map<String, dynamic>> requestVpnConsent() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'requestVpnConsent',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<void> openUsageAccessSettings() async {
+    await _method.invokeMethod<void>('openUsageAccessSettings');
+  }
+
+  static Future<Map<String, dynamic>> getBankingShieldSnapshot() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getBankingShieldSnapshot',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<List<Map<String, dynamic>>> scanInstalledAiClients() async {
+    final result = await _method.invokeMethod<List<Object?>>(
+      'scanInstalledAiClients',
+    );
+    if (result == null) return const [];
+    return result
+        .map((e) => Map<String, dynamic>.from(e! as Map))
+        .toList(growable: false);
+  }
 }

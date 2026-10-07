@@ -12,6 +12,7 @@ From `nexusshield_mobile/`:
 
 ```bash
 flutter pub get
+dart run tool/pad_brand_icons.dart
 dart run flutter_launcher_icons
 dart run flutter_native_splash:create
 ```

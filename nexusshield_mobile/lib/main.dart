@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/banking/banking_shield_provider.dart';
 import 'features/call_fraud/call_fraud_provider.dart';
 import 'features/network/wifi_security_provider.dart';
 import 'features/permissions/permission_scan_provider.dart';
 import 'features/remote_access/remote_access_provider.dart';
+import 'features/traffic_guard/traffic_guard_provider.dart';
+import 'features/vault/smart_vault_sync_provider.dart';
+import 'widgets/tracking_alert_badge.dart';
 import 'providers/vault_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
@@ -54,6 +58,9 @@ class _RootShellState extends ConsumerState<_RootShell> {
     ref.watch(wifiSecurityProvider);
     ref.watch(remoteAccessProvider);
     ref.watch(callFraudProvider);
+    ref.watch(trafficGuardProvider);
+    ref.watch(bankingShieldProvider);
+    ref.watch(smartVaultSyncProvider);
     const pages = [
       HomeScreen(),
       VaultScreen(),
@@ -61,7 +68,13 @@ class _RootShellState extends ConsumerState<_RootShell> {
     ];
 
     return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          IndexedStack(index: _index, children: pages),
+          const TrackingAlertBadge(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),

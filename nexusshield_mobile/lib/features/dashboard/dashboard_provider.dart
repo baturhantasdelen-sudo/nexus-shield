@@ -16,6 +16,12 @@ import 'modules/live_shield_security_module.dart';
 import 'modules/network_security_module.dart';
 import 'modules/permissions_security_module.dart';
 import 'modules/remote_access_security_module.dart';
+import 'modules/traffic_guard_security_module.dart';
+import 'modules/banking_security_module.dart';
+import 'modules/vault_sync_security_module.dart';
+import '../banking/banking_shield_provider.dart';
+import '../traffic_guard/traffic_guard_provider.dart';
+import '../vault/smart_vault_sync_provider.dart';
 
 class DashboardState {
   const DashboardState({
@@ -59,6 +65,9 @@ final securityModulesProvider = Provider<List<SecurityModule>>((ref) {
     LiveShieldSecurityModule(ref),
     NetworkSecurityModule(ref),
     PermissionsSecurityModule(ref),
+    TrafficGuardSecurityModule(ref),
+    BankingSecurityModule(ref),
+    VaultSyncSecurityModule(ref),
     AiGuardSecurityModule(ref),
     CallFraudSecurityModule(ref),
     RemoteAccessSecurityModule(ref),
@@ -77,6 +86,9 @@ class DashboardController extends Notifier<DashboardState> {
     ref.listen(aiShieldProvider, (_, _) => _scheduleRefresh());
     ref.listen(callFraudProvider, (_, _) => _scheduleRefresh());
     ref.listen(remoteAccessProvider, (_, _) => _scheduleRefresh());
+    ref.listen(trafficGuardProvider, (_, _) => _scheduleRefresh());
+    ref.listen(bankingShieldProvider, (_, _) => _scheduleRefresh());
+    ref.listen(smartVaultSyncProvider, (_, _) => _scheduleRefresh());
     Future.microtask(refresh);
     return DashboardState.initial();
   }

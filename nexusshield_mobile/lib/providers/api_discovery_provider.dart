@@ -233,6 +233,24 @@ class ApiDiscoveryController extends Notifier<ApiDiscoveryState> {
     state = state.copyWith(endpoints: next);
   }
 
+  void registerDiscoveredClient({
+    required String id,
+    required String title,
+    required String subtitle,
+  }) {
+    if (state.endpoints.any((e) => e.id == id)) return;
+    state = state.copyWith(
+      endpoints: [
+        ...state.endpoints,
+        ApiEndpointEntry(
+          id: id,
+          title: title,
+          subtitle: subtitle,
+          isDiscovered: true,
+        ),
+      ],
+    );
+  }
 }
 
 final apiDiscoveryProvider =

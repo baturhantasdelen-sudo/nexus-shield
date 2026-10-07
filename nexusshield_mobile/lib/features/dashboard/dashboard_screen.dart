@@ -7,7 +7,10 @@ import '../../widgets/nexus_screen_header.dart';
 import '../ai_shield/ai_shield_screen.dart';
 import '../call_fraud/call_fraud_screen.dart';
 import '../network/widgets/wifi_alert_banner.dart';
-import '../permissions/permission_scan_screen.dart';
+import '../apps_control/apps_permissions_hub_screen.dart';
+import '../command_center/security_command_center_screen.dart';
+import '../traffic_guard/traffic_guard_provider.dart';
+import '../traffic_guard/traffic_guard_setup_sheet.dart';
 import '../security/security_alert_provider.dart';
 import 'dashboard_provider.dart';
 import 'widgets/protection_score_ring.dart';
@@ -17,9 +20,19 @@ import 'widgets/security_status_card.dart';
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
-  void _openModule(BuildContext context, String moduleId) {
+  void _openModule(BuildContext context, WidgetRef ref, String moduleId) {
+    if (moduleId == 'traffic_guard') {
+      final guard = ref.read(trafficGuardProvider.notifier);
+      if (guard.needsSetup) {
+        showTrafficGuardSetupSheet(context);
+        return;
+      }
+    }
     final route = switch (moduleId) {
-      'permissions' => const PermissionScanScreen(),
+      'permissions' => const AppsPermissionsHubScreen(),
+      'traffic_guard' => const SecurityCommandCenterScreen(),
+      'banking' => const SecurityCommandCenterScreen(),
+      'vault_sync' => const SecurityCommandCenterScreen(),
       'ai_guard' => const AiShieldScreen(),
       'call_fraud' => const CallFraudScreen(),
       'network' => null,
@@ -39,9 +52,25 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const NexusScreenHeader(
-          title: 'Güvenlik Panosu',
-          subtitle: 'Canlı koruma skoru • modüler güvenlik durumu',
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Expanded(
+              child: NexusScreenHeader(
+                title: 'Güvenlik Panosu',
+                subtitle: 'Canlı koruma skoru • modüler güvenlik durumu',
+              ),
+            ),
+            IconButton(
+              tooltip: 'Security Karargahı',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const SecurityCommandCenterScreen(),
+                ),
+              ),
+              icon: const Icon(Icons.hub_outlined, color: NexusBrand.cyberCyan),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         const WifiAlertBanner(),
@@ -103,7 +132,7 @@ class DashboardScreen extends ConsumerWidget {
               child: SecurityStatusCard(
                 health: health,
                 icon: iconForModuleId(health.moduleId),
-                onTap: () => _openModule(context, health.moduleId),
+                onTap: () => _openModule(context, ref, health.moduleId),
               ),
             ),
           ),

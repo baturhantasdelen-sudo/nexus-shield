@@ -1,12 +1,17 @@
 package ai.nexusshield.nexusshield_mobile
 
+import android.app.Activity
+import android.app.AppOpsManager
+import android.app.usage.UsageStatsManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.VpnService
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
@@ -29,6 +34,30 @@ object NexusShieldPlatformPlugin {
 
     private var eventSink: EventChannel.EventSink? = null
     private var packageReceiver: BroadcastReceiver? = null
+    private var activityRef: Activity? = null
+    private var pendingVpnResult: MethodChannel.Result? = null
+
+    const val VPN_PREPARE_REQUEST = 0x4E58
+
+    fun attachActivity(activity: Activity) {
+        activityRef = activity
+    }
+
+    fun onActivityResult(requestCode: Int, resultCode: Int) {
+        if (requestCode != VPN_PREPARE_REQUEST) return
+        val result = pendingVpnResult ?: return
+        pendingVpnResult = null
+        val activity = activityRef ?: run {
+            result.success(mapOf("granted" to false, "active" to false))
+            return
+        }
+        if (resultCode == Activity.RESULT_OK) {
+            startVpnService(activity.applicationContext)
+            result.success(mapOf("granted" to true, "active" to true))
+        } else {
+            result.success(mapOf("granted" to false, "active" to false))
+        }
+    }
 
     fun registerWith(flutterEngine: FlutterEngine, context: Context) {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
@@ -52,6 +81,48 @@ object NexusShieldPlatformPlugin {
                 }
                 "getRemoteAccessSignals" -> {
                     result.success(getRemoteAccessSignals(context))
+                }
+                "openAppSettings" -> {
+                    val packageId = call.argument<String>("packageId")
+                    if (packageId.isNullOrBlank()) {
+                        result.error("invalid_args", "packageId required", null)
+                    } else {
+                        openAppSettings(context, packageId)
+                        result.success(null)
+                    }
+                }
+                "setPackageNetworkBlocked" -> {
+                    val packageId = call.argument<String>("packageId")
+                    val blocked = call.argument<Boolean>("blocked") ?: false
+                    if (packageId.isNullOrBlank()) {
+                        result.error("invalid_args", "packageId required", null)
+                    } else {
+                        NetworkBlockStore.setBlocked(context, packageId, blocked)
+                        result.success(null)
+                    }
+                }
+                "getTrafficGuardSnapshot" -> {
+                    result.success(getTrafficGuardSnapshot(context))
+                }
+                "startLocalTrafficGuard" -> {
+                    result.success(startLocalTrafficGuard(context))
+                }
+                "requestVpnConsent" -> {
+                    requestVpnConsent(result)
+                }
+                "openUsageAccessSettings" -> {
+                    openUsageAccessSettings(context)
+                    result.success(null)
+                }
+                "stopLocalTrafficGuard" -> {
+                    context.stopService(Intent(context, NexusShieldVpnService::class.java))
+                    result.success(null)
+                }
+                "getBankingShieldSnapshot" -> {
+                    result.success(getBankingShieldSnapshot(context))
+                }
+                "scanInstalledAiClients" -> {
+                    result.success(scanInstalledAiClients(context))
                 }
                 else -> result.notImplemented()
             }
@@ -111,6 +182,11 @@ object NexusShieldPlatformPlugin {
         val out = mutableListOf<Map<String, Any>>()
         for (app in apps) {
             if (app.packageName == context.packageName) continue
+            if (app.flags and ApplicationInfo.FLAG_SYSTEM != 0 &&
+                app.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP == 0
+            ) {
+                continue
+            }
             val granted = mutableListOf<String>()
             for (perm in sensitivePermissions) {
                 val status = pm.checkPermission(perm, app.packageName)
@@ -118,10 +194,13 @@ object NexusShieldPlatformPlugin {
                     granted.add(permissionLabel(perm))
                 }
             }
-            if (granted.isEmpty()) continue
+            if (requestsInternet(pm, app.packageName)) {
+                granted.add("network")
+            }
+            val score = computeRiskScore(granted)
             val risk = when {
-                granted.size >= 3 -> "high"
-                granted.size >= 2 -> "medium"
+                score >= 70 -> "high"
+                score >= 40 -> "medium"
                 else -> "low"
             }
             out.add(
@@ -130,10 +209,172 @@ object NexusShieldPlatformPlugin {
                     "displayName" to pm.getApplicationLabel(app).toString(),
                     "permissions" to granted,
                     "risk" to risk,
+                    "riskScore" to score,
+                    "networkBlocked" to NetworkBlockStore.isBlocked(context, app.packageName),
                 ),
             )
         }
-        return out.sortedByDescending { (it["permissions"] as List<*>).size }.take(250)
+        return out.sortedByDescending { (it["riskScore"] as Int) }.take(500)
+    }
+
+    private fun requestsInternet(pm: PackageManager, packageId: String): Boolean {
+        return try {
+            @Suppress("DEPRECATION")
+            val info = pm.getPackageInfo(packageId, PackageManager.GET_PERMISSIONS)
+            info.requestedPermissions?.contains(android.Manifest.permission.INTERNET) == true
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    private fun computeRiskScore(permissions: List<String>): Int {
+        var score = 0
+        if (permissions.contains("camera")) score += 22
+        if (permissions.contains("microphone")) score += 22
+        if (permissions.contains("contacts")) score += 18
+        if (permissions.contains("location")) score += 20
+        if (permissions.contains("network")) score += 8
+        if (permissions.contains("camera") && permissions.contains("microphone")) score += 15
+        return score.coerceIn(0, 100)
+    }
+
+    private fun openAppSettings(context: Context, packageId: String) {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = android.net.Uri.parse("package:$packageId")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    private fun getForegroundPackage(context: Context): String? {
+        val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as? UsageStatsManager
+            ?: return null
+        val end = System.currentTimeMillis()
+        val begin = end - 120_000
+        val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_BEST, begin, end)
+            ?: return null
+        return stats.maxByOrNull { it.lastTimeUsed }?.packageName
+    }
+
+    private fun getTrafficGuardSnapshot(context: Context): Map<String, Any> {
+        val foreground = getForegroundPackage(context) ?: ""
+        val blocked = NetworkBlockStore.blockedPackages(context).toList()
+        return mapOf(
+            "foregroundPackage" to foreground,
+            "blockedPackages" to blocked,
+            "vpnActive" to NexusShieldVpnService.isRunning,
+            "usageStatsGranted" to hasUsageStatsAccess(context),
+        )
+    }
+
+    private fun hasUsageStatsAccess(context: Context): Boolean {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName,
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS,
+                android.os.Process.myUid(),
+                context.packageName,
+            )
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun startVpnService(context: Context) {
+        val intent = Intent(context, NexusShieldVpnService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context.startForegroundService(intent)
+        } else {
+            context.startService(intent)
+        }
+    }
+
+    private fun startLocalTrafficGuard(context: Context): Map<String, Any> {
+        val prepare = VpnService.prepare(context)
+        if (prepare != null) {
+            return mapOf("needsVpnConsent" to true, "active" to false)
+        }
+        startVpnService(context)
+        return mapOf("needsVpnConsent" to false, "active" to true)
+    }
+
+    private fun requestVpnConsent(result: MethodChannel.Result) {
+        val activity = activityRef
+        if (activity == null) {
+            result.error("no_activity", "Activity not available for VPN consent", null)
+            return
+        }
+        val prepare = VpnService.prepare(activity)
+        if (prepare == null) {
+            startVpnService(activity.applicationContext)
+            result.success(mapOf("granted" to true, "active" to true))
+            return
+        }
+        pendingVpnResult = result
+        @Suppress("DEPRECATION")
+        activity.startActivityForResult(prepare, VPN_PREPARE_REQUEST)
+    }
+
+    private fun openUsageAccessSettings(context: Context) {
+        val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
+
+    private fun getBankingShieldSnapshot(context: Context): Map<String, Any> {
+        val remote = getRemoteAccessSignals(context)
+        val foreground = getForegroundPackage(context) ?: ""
+        val banking = isBankingPackage(foreground)
+        return mapOf(
+            "foregroundPackage" to foreground,
+            "bankingAppActive" to banking,
+            "screenCaptureActive" to remote["screenCaptureActive"]!!,
+            "overlayAppsCount" to remote["overlayAppsCount"]!!,
+            "suspiciousAccessibilityCount" to remote["suspiciousAccessibilityCount"]!!,
+            "detail" to remote["detail"]!!,
+        )
+    }
+
+    private fun isBankingPackage(packageId: String): Boolean {
+        if (packageId.isBlank()) return false
+        val markers = listOf("bank", "finans", "garanti", "yapikredi", "isbank", "akbank", "ziraat", "vakif", "enpara", "papara")
+        val lower = packageId.lowercase()
+        return markers.any { lower.contains(it) }
+    }
+
+    private val aiClientPackages = mapOf(
+        "com.openai.chatgpt" to "ChatGPT",
+        "com.anthropic.claude" to "Claude",
+        "com.google.android.apps.bard" to "Gemini",
+        "com.google.android.apps.genai.gemini" to "Gemini",
+        "com.microsoft.copilot" to "Copilot",
+        "com.deepseek.chat" to "DeepSeek",
+    )
+
+    private fun scanInstalledAiClients(context: Context): List<Map<String, Any>> {
+        val pm = context.packageManager
+        return aiClientPackages.mapNotNull { (pkg, label) ->
+            val installed = try {
+                pm.getPackageInfo(pkg, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
+            if (!installed) return@mapNotNull null
+            mapOf(
+                "packageId" to pkg,
+                "displayName" to label,
+                "canAutoExtractKeys" to false,
+                "importHint" to "API anahtarını ilgili uygulamadan kopyalayıp Vault'a güvenle yapıştırın.",
+            )
+        }
     }
 
     private fun permissionLabel(perm: String): String = when (perm) {
@@ -215,16 +456,43 @@ object NexusShieldPlatformPlugin {
         val services = accessibility.split(":").filter { it.isNotBlank() }
         val suspicious = services.count { !it.contains(context.packageName) }
 
+        val overlayCount = countOverlayCapableApps(context)
+
         return mapOf(
             "screenCaptureActive" to false,
             "suspiciousAccessibilityCount" to suspicious,
-            "overlayAppsCount" to 0,
+            "overlayAppsCount" to overlayCount,
             "detail" to if (suspicious > 0) {
                 "$suspicious erişilebilirlik servisi etkin"
             } else {
                 "Belirgin uzaktan erişim sinyali yok"
             },
         )
+    }
+
+    private fun countOverlayCapableApps(context: Context): Int {
+        val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val pm = context.packageManager
+        var count = 0
+        for (app in pm.getInstalledApplications(PackageManager.GET_META_DATA)) {
+            if (app.packageName == context.packageName) continue
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW,
+                    app.uid,
+                    app.packageName,
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                appOps.checkOpNoThrow(
+                    AppOpsManager.OPSTR_SYSTEM_ALERT_WINDOW,
+                    app.uid,
+                    app.packageName,
+                )
+            }
+            if (mode == AppOpsManager.MODE_ALLOWED) count++
+        }
+        return count
     }
 }
 

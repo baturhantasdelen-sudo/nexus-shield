@@ -33,6 +33,46 @@ final class NexusPlatformBridge: NSObject, FlutterPlugin, FlutterStreamHandler {
       result(nil)
     case "getRemoteAccessSignals":
       result(remoteAccessSnapshot())
+    case "openAppSettings":
+      if let args = call.arguments as? [String: Any],
+         let _ = args["packageId"] as? String {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+          UIApplication.shared.open(url)
+        }
+      }
+      result(nil)
+    case "setPackageNetworkBlocked":
+      result(nil)
+    case "getTrafficGuardSnapshot":
+      result([
+        "foregroundPackage": "",
+        "blockedPackages": [] as [String],
+        "vpnActive": false,
+        "usageStatsGranted": false,
+      ])
+    case "startLocalTrafficGuard":
+      result(["needsVpnConsent": false, "active": false])
+    case "stopLocalTrafficGuard":
+      result(nil)
+    case "requestVpnConsent":
+      result(["granted": false, "active": false])
+    case "openUsageAccessSettings":
+      if let url = URL(string: UIApplication.openSettingsURLString) {
+        UIApplication.shared.open(url)
+      }
+      result(nil)
+    case "getBankingShieldSnapshot":
+      let remote = remoteAccessSnapshot()
+      result([
+        "foregroundPackage": "",
+        "bankingAppActive": false,
+        "screenCaptureActive": remote["screenCaptureActive"] ?? false,
+        "overlayAppsCount": 0,
+        "suspiciousAccessibilityCount": remote["suspiciousAccessibilityCount"] ?? 0,
+        "detail": remote["detail"] ?? "",
+      ])
+    case "scanInstalledAiClients":
+      result([])
     default:
       result(FlutterMethodNotImplemented)
     }
