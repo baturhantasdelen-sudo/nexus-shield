@@ -1,9 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nexusshield_mobile/main.dart';
 
 void main() {
-  testWidgets('Dashboard renders security panel and telemetry', (tester) async {
+  testWidgets('Live shield shell renders active protection UI', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: NexusShieldApp(),
@@ -14,9 +15,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Personal Guard'), findsOneWidget);
-    expect(find.textContaining('Güvenlik Panosu'), findsOneWidget);
-    expect(find.textContaining('Koruma skoru'), findsOneWidget);
-    expect(find.textContaining('PII Items Masked'), findsOneWidget);
-    expect(find.text('Live Interceptor Playground'), findsOneWidget);
+    expect(find.textContaining('Kalkanı Devreye Al'), findsOneWidget);
+    expect(find.text('360° Koruma Sütunları'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Canlı denetim akışı'),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Canlı denetim akışı'), findsOneWidget);
   });
 }

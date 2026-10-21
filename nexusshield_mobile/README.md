@@ -12,14 +12,14 @@ From `nexusshield_mobile/`:
 
 ```bash
 flutter pub get
-dart run tool/pad_brand_icons.dart
+dart run tool/generate_minimal_tech_logo.dart
 dart run flutter_launcher_icons
 dart run flutter_native_splash:create
 ```
 
 (`flutter pub run …` still works; `dart run` is the current Flutter entry.)
 
-In-app branding uses committed PNGs under `assets/icon/` (`nexus_logo.png` 1024×888 lockup, `nexus_emblem.png` 1024×1024) via `NexusLogo` (`BoxFit.contain`, `FilterQuality.high`). UI shell uses `#0B132B` with teal/gold accents from the lockup palette.
+Branding uses the minimal tech emblem (`tool/generate_minimal_tech_logo.dart` → `assets/icon/nexus_minimal_*.png`) and in-app vector `NexusMinimalTechLogo`. UI shell uses `#0B132B` with teal/gold accents.
 
 ## Android Play Console (AAB)
 

@@ -30,6 +30,8 @@ object NexusShieldPlatformPlugin {
         android.Manifest.permission.READ_CONTACTS,
         android.Manifest.permission.ACCESS_FINE_LOCATION,
         android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.READ_MEDIA_IMAGES,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
     )
 
     private var eventSink: EventChannel.EventSink? = null
@@ -124,6 +126,24 @@ object NexusShieldPlatformPlugin {
                 "scanInstalledAiClients" -> {
                     result.success(scanInstalledAiClients(context))
                 }
+                "setAppDlpPolicy" -> {
+                    val packageId = call.argument<String>("packageId")
+                    if (packageId.isNullOrBlank()) {
+                        result.error("invalid_args", "packageId required", null)
+                    } else {
+                        val outbound = call.argument<Boolean>("outboundBlocked") ?: false
+                        val clipboard = call.argument<Boolean>("clipboardBlocked") ?: false
+                        val background = call.argument<Boolean>("backgroundRestricted") ?: false
+                        AppDlpStore.setOutboundBlocked(context, packageId, outbound)
+                        AppDlpStore.setClipboardBlocked(context, packageId, clipboard)
+                        AppDlpStore.setBackgroundRestricted(context, packageId, background)
+                        NexusShieldVpnService.restartWithPolicy(context)
+                        result.success(null)
+                    }
+                }
+                "getPrivacyPillarsSnapshot" -> {
+                    result.success(getPrivacyPillarsSnapshot(context))
+                }
                 else -> result.notImplemented()
             }
         }
@@ -211,10 +231,26 @@ object NexusShieldPlatformPlugin {
                     "risk" to risk,
                     "riskScore" to score,
                     "networkBlocked" to NetworkBlockStore.isBlocked(context, app.packageName),
+                    "dlp" to AppDlpStore.snapshot(context, app.packageName),
                 ),
             )
         }
         return out.sortedByDescending { (it["riskScore"] as Int) }.take(500)
+    }
+
+    private fun getPrivacyPillarsSnapshot(context: Context): Map<String, Any> {
+        val wifi = getWifiSecuritySnapshot(context)
+        val remote = getRemoteAccessSignals(context)
+        val mediaApps = scanInstalledAppPermissions(context).count { row ->
+            (row["permissions"] as List<*>).any { it == "media" }
+        }
+        return mapOf(
+            "wifi" to wifi,
+            "remoteAccess" to remote,
+            "mediaAppsWithAccess" to mediaApps,
+            "outboundBlockedCount" to AppDlpStore.outboundBlockedPackages(context).size,
+            "vpnActive" to NexusShieldVpnService.isRunning,
+        )
     }
 
     private fun requestsInternet(pm: PackageManager, packageId: String): Boolean {
@@ -384,6 +420,9 @@ object NexusShieldPlatformPlugin {
         android.Manifest.permission.ACCESS_FINE_LOCATION,
         android.Manifest.permission.ACCESS_COARSE_LOCATION,
         -> "location"
+        android.Manifest.permission.READ_MEDIA_IMAGES,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+        -> "media"
         else -> "unknown"
     }
 

@@ -4,6 +4,7 @@ enum SensitivePermissionKind {
   contacts,
   location,
   network,
+  media,
   unknown;
 
   static SensitivePermissionKind fromNative(String raw) {
@@ -13,6 +14,7 @@ enum SensitivePermissionKind {
       'contacts' => SensitivePermissionKind.contacts,
       'location' => SensitivePermissionKind.location,
       'network' => SensitivePermissionKind.network,
+      'media' => SensitivePermissionKind.media,
       _ => SensitivePermissionKind.unknown,
     };
   }
@@ -23,8 +25,30 @@ enum SensitivePermissionKind {
         SensitivePermissionKind.contacts => 'Rehber',
         SensitivePermissionKind.location => 'Konum',
         SensitivePermissionKind.network => 'Ağ erişimi',
+        SensitivePermissionKind.media => 'Fotoğraf / medya',
         SensitivePermissionKind.unknown => 'Diğer',
       };
+}
+
+class AppDlpPolicy {
+  const AppDlpPolicy({
+    this.outboundBlocked = false,
+    this.clipboardBlocked = false,
+    this.backgroundRestricted = false,
+  });
+
+  final bool outboundBlocked;
+  final bool clipboardBlocked;
+  final bool backgroundRestricted;
+
+  factory AppDlpPolicy.fromMap(Map<String, dynamic>? map) {
+    if (map == null) return const AppDlpPolicy();
+    return AppDlpPolicy(
+      outboundBlocked: map['outboundBlocked'] == true,
+      clipboardBlocked: map['clipboardBlocked'] == true,
+      backgroundRestricted: map['backgroundRestricted'] == true,
+    );
+  }
 }
 
 enum AppPermissionRiskTier {
@@ -55,6 +79,7 @@ class AppPermissionReport {
     required this.riskTier,
     required this.riskScore,
     this.networkBlocked = false,
+    this.dlp = const AppDlpPolicy(),
   });
 
   final String packageId;
@@ -63,6 +88,7 @@ class AppPermissionReport {
   final AppPermissionRiskTier riskTier;
   final int riskScore;
   final bool networkBlocked;
+  final AppDlpPolicy dlp;
 
   bool get isRisky =>
       riskTier == AppPermissionRiskTier.high ||
@@ -86,10 +112,13 @@ class AppPermissionReport {
       riskTier: AppPermissionRiskTier.fromNative('${map['risk'] ?? 'low'}'),
       riskScore: score,
       networkBlocked: map['networkBlocked'] == true,
+      dlp: AppDlpPolicy.fromMap(
+        Map<String, dynamic>.from(map['dlp'] as Map? ?? const {}),
+      ),
     );
   }
 
-  AppPermissionReport copyWith({bool? networkBlocked}) {
+  AppPermissionReport copyWith({bool? networkBlocked, AppDlpPolicy? dlp}) {
     return AppPermissionReport(
       packageId: packageId,
       displayName: displayName,
@@ -97,6 +126,7 @@ class AppPermissionReport {
       riskTier: riskTier,
       riskScore: riskScore,
       networkBlocked: networkBlocked ?? this.networkBlocked,
+      dlp: dlp ?? this.dlp,
     );
   }
 

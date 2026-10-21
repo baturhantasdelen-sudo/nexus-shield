@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.11+10
+version: 1.0.12+11
 
 environment:
   sdk: ^3.13.4
@@ -50,10 +50,10 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/icon/nexus_emblem_launcher.png
+  image_path: assets/icon/nexus_minimal_launcher.png
   min_sdk_android: 21
   adaptive_icon_background: "#0B132B"
-  adaptive_icon_foreground: assets/icon/nexus_emblem_launcher.png
+  adaptive_icon_foreground: assets/icon/nexus_minimal_launcher.png
   remove_alpha_ios: true
   background_color_ios: "#0B132B"
   web:
@@ -61,7 +61,7 @@ flutter_launcher_icons:
 
 flutter_native_splash:
   color: "#0B132B"
-  image: assets/icon/nexus_logo_splash.png
+  image: assets/icon/nexus_minimal_splash.png
   android: true
   ios: true
   web: false
@@ -69,7 +69,7 @@ flutter_native_splash:
   ios_content_mode: center
   android_12:
     color: "#0B132B"
-    image: assets/icon/nexus_logo_splash.png
+    image: assets/icon/nexus_minimal_splash.png
     icon_background_color: "#0B132B"
 
 
@@ -85,11 +85,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/icon/nexus_logo.png
-    - assets/icon/nexus_emblem.png
-    - assets/icon/nexus_emblem_launcher.png
-    - assets/icon/nexus_logo_splash.png
-    - assets/icon/nexus_emblem_splash.png
+    - assets/icon/nexus_minimal_launcher.png
+    - assets/icon/nexus_minimal_splash.png
     - assets/threat_intel/scam_numbers.json
 
   # An image asset can refer to one or more resolution-specific "variants", see

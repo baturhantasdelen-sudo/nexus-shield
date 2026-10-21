@@ -3,17 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'features/banking/banking_shield_provider.dart';
 import 'features/call_fraud/call_fraud_provider.dart';
+import 'features/live_shield/live_feed_provider.dart';
+import 'features/live_shield/live_shield_screen.dart';
+import 'features/live_shield/privacy_pillars_provider.dart';
 import 'features/network/wifi_security_provider.dart';
 import 'features/permissions/permission_scan_provider.dart';
 import 'features/remote_access/remote_access_provider.dart';
 import 'features/traffic_guard/traffic_guard_provider.dart';
 import 'features/vault/smart_vault_sync_provider.dart';
-import 'widgets/tracking_alert_badge.dart';
+import 'providers/shield_providers.dart';
 import 'providers/vault_provider.dart';
-import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/vault_screen.dart';
 import 'theme/app_theme.dart';
+import 'widgets/nexus_minimal_tech_logo.dart';
 import 'widgets/nexus_splash_overlay.dart';
 
 void main() {
@@ -35,24 +38,18 @@ class NexusShieldApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       home: const NexusSplashOverlay(
-        child: _RootShell(),
+        child: _LiveShieldShell(),
       ),
     );
   }
 }
 
-class _RootShell extends ConsumerStatefulWidget {
-  const _RootShell();
+class _LiveShieldShell extends ConsumerWidget {
+  const _LiveShieldShell();
 
   @override
-  ConsumerState<_RootShell> createState() => _RootShellState();
-}
-
-class _RootShellState extends ConsumerState<_RootShell> {
-  int _index = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final shieldOn = ref.watch(shieldStatusProvider);
     ref.watch(vaultServiceProvider);
     ref.watch(securityEventBridgeProvider);
     ref.watch(wifiSecurityProvider);
@@ -61,42 +58,40 @@ class _RootShellState extends ConsumerState<_RootShell> {
     ref.watch(trafficGuardProvider);
     ref.watch(bankingShieldProvider);
     ref.watch(smartVaultSyncProvider);
-    const pages = [
-      HomeScreen(),
-      VaultScreen(),
-      SettingsScreen(),
-    ];
+    ref.watch(liveFeedProvider);
+    ref.watch(privacyPillarsProvider);
 
     return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          IndexedStack(index: _index, children: pages),
-          const TrackingAlertBadge(),
+      backgroundColor: NexusBrand.deepSlate,
+      appBar: AppBar(
+        title: const Text('Personal Guard'),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: NexusMinimalTechLogo(
+            size: 36,
+            active: shieldOn,
+            pulseWhenActive: true,
+          ),
+        ),
+        leadingWidth: 52,
+        actions: [
+          IconButton(
+            tooltip: 'Vault',
+            icon: const Icon(Icons.key_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const VaultScreen()),
+            ),
+          ),
+          IconButton(
+            tooltip: 'Ayarlar',
+            icon: const Icon(Icons.tune_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+            ),
+          ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.key_outlined),
-            selectedIcon: Icon(Icons.key),
-            label: 'Vault',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-      ),
+      body: const LiveShieldScreen(),
     );
   }
 }

@@ -95,6 +95,27 @@ abstract final class NexusPlatformBridge {
     return Map<String, dynamic>.from(result ?? const {});
   }
 
+  static Future<void> setAppDlpPolicy({
+    required String packageId,
+    required bool outboundBlocked,
+    required bool clipboardBlocked,
+    required bool backgroundRestricted,
+  }) async {
+    await _method.invokeMethod<void>('setAppDlpPolicy', {
+      'packageId': packageId,
+      'outboundBlocked': outboundBlocked,
+      'clipboardBlocked': clipboardBlocked,
+      'backgroundRestricted': backgroundRestricted,
+    });
+  }
+
+  static Future<Map<String, dynamic>> getPrivacyPillarsSnapshot() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getPrivacyPillarsSnapshot',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
   static Future<List<Map<String, dynamic>>> scanInstalledAiClients() async {
     final result = await _method.invokeMethod<List<Object?>>(
       'scanInstalledAiClients',

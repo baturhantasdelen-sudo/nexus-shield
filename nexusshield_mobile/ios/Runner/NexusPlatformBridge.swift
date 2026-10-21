@@ -73,6 +73,16 @@ final class NexusPlatformBridge: NSObject, FlutterPlugin, FlutterStreamHandler {
       ])
     case "scanInstalledAiClients":
       result([])
+    case "setAppDlpPolicy":
+      result(nil)
+    case "getPrivacyPillarsSnapshot":
+      result([
+        "wifi": wifiSnapshot(),
+        "remoteAccess": remoteAccessSnapshot(),
+        "mediaAppsWithAccess": 0,
+        "outboundBlockedCount": 0,
+        "vpnActive": false,
+      ])
     default:
       result(FlutterMethodNotImplemented)
     }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
-import 'nexus_logo.dart';
+import 'nexus_minimal_tech_logo.dart';
 
 class ShieldButton extends StatelessWidget {
   const ShieldButton({
@@ -42,10 +42,10 @@ class ShieldButton extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
               child: Column(
                 children: [
-                  const Expanded(
-                    child: NexusLogo(
+                  Expanded(
+                    child: NexusMinimalTechLogo(
                       size: 96,
-                      variant: NexusLogoVariant.emblem,
+                      active: active,
                     ),
                   ),
                   const SizedBox(height: 6),

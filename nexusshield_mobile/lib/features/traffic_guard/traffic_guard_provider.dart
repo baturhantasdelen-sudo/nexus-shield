@@ -85,6 +85,8 @@ class TrafficGuardController extends Notifier<TrafficGuardState> {
 
   Future<void> refresh() => _tick();
 
+  Future<void> ensureStarted() => _ensureStarted();
+
   bool get needsSetup =>
       state.needsVpnConsent || !state.usageStatsGranted || !state.active;
 

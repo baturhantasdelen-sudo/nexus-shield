@@ -152,37 +152,72 @@ class _AppControlCard extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => control.openSystemSettings(report.packageId),
-                  icon: const Icon(Icons.settings_outlined, size: 18),
-                  label: const Text('İzni yönet'),
-                ),
-                FilledButton.tonalIcon(
-                  onPressed: () => control.toggleNetworkBlock(
-                    packageId: report.packageId,
-                    blocked: !report.networkBlocked,
-                  ),
-                  icon: Icon(
-                    report.networkBlocked
-                        ? Icons.public
-                        : Icons.block_flipped,
-                    size: 18,
-                  ),
-                  label: Text(
-                    report.networkBlocked
-                        ? 'Ağ engelini kaldır'
-                        : 'Ağ erişimini engelle',
-                  ),
-                ),
-              ],
+            _DlpSwitch(
+              label: 'Veri çıkışını kes',
+              value: report.dlp.outboundBlocked,
+              onChanged: (v) => control.setDlp(
+                packageId: report.packageId,
+                displayName: report.displayName,
+                outboundBlocked: v,
+                clipboardBlocked: report.dlp.clipboardBlocked,
+                backgroundRestricted: report.dlp.backgroundRestricted,
+              ),
+            ),
+            _DlpSwitch(
+              label: 'Pano / kopyalama erişimini kapat',
+              value: report.dlp.clipboardBlocked,
+              onChanged: (v) => control.setDlp(
+                packageId: report.packageId,
+                displayName: report.displayName,
+                outboundBlocked: report.dlp.outboundBlocked,
+                clipboardBlocked: v,
+                backgroundRestricted: report.dlp.backgroundRestricted,
+              ),
+            ),
+            _DlpSwitch(
+              label: 'Arka plan izni kısıtla',
+              value: report.dlp.backgroundRestricted,
+              onChanged: (v) => control.setDlp(
+                packageId: report.packageId,
+                displayName: report.displayName,
+                outboundBlocked: report.dlp.outboundBlocked,
+                clipboardBlocked: report.dlp.clipboardBlocked,
+                backgroundRestricted: v,
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => control.openSystemSettings(report.packageId),
+              icon: const Icon(Icons.settings_outlined, size: 18),
+              label: const Text('Sistem izinlerini aç'),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DlpSwitch extends StatelessWidget {
+  const _DlpSwitch({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SwitchListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      title: Text(label, style: const TextStyle(fontSize: 13)),
+      value: value,
+      activeTrackColor: NexusBrand.cyberCyan.withValues(alpha: 0.5),
+      onChanged: onChanged,
     );
   }
 }

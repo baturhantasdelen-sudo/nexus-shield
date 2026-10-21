@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 
 /// NexusShield design tokens — aligned with lockup navy / teal / gold accents.
 abstract final class NexusBrand {
-  static const logoLockupAsset = 'assets/icon/nexus_logo.png';
-  static const logoEmblemAsset = 'assets/icon/nexus_emblem.png';
+  static const brandMinimalIconAsset = 'assets/icon/nexus_minimal_launcher.png';
   static const brandTagline = 'Personal Guard Nexus Shield';
 
   /// Core shell — deep navy from lockup (#0B132B family).

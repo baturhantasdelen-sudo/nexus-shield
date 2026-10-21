@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/telemetry_stats.dart';
+import '../features/traffic_guard/traffic_guard_provider.dart';
 import '../services/firewall_service.dart';
 
 class ShieldSettings {
@@ -51,6 +52,9 @@ class ShieldStatusController extends Notifier<bool> {
 
     await FirewallService.instance.ensureInitialized();
     state = true;
+    if (ref.read(shieldSettingsProvider).localVpn) {
+      await ref.read(trafficGuardProvider.notifier).ensureStarted();
+    }
     _runMonitoringProbe();
     _monitorTimer = Timer.periodic(
       const Duration(seconds: 3),

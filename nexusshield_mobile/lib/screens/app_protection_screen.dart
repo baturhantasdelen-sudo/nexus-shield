@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/app_protection_provider.dart';
 import '../theme/app_theme.dart';
-import '../widgets/nexus_logo.dart';
+import '../widgets/nexus_minimal_tech_logo.dart';
+import '../providers/shield_providers.dart';
 
 class AppProtectionScreen extends ConsumerWidget {
   const AppProtectionScreen({super.key});
@@ -11,6 +12,7 @@ class AppProtectionScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final apps = ref.watch(appProtectionProvider);
+    final shieldOn = ref.watch(shieldStatusProvider);
     final notifier = ref.read(appProtectionProvider.notifier);
 
     final recommended = apps.where((a) => a.recommended).toList();
@@ -21,7 +23,7 @@ class AppProtectionScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            const NexusLogo(size: 26, maxWidth: 132),
+            NexusMinimalTechLogo(size: 26, active: shieldOn),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
