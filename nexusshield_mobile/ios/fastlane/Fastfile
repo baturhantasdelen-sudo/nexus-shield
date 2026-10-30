@@ -58,6 +58,78 @@ def nexus_team_id
   team
 end
 
+def nexus_pubspec_version_parts
+  pubspec_path = File.expand_path("../../pubspec.yaml", __dir__)
+  line = File.read(pubspec_path).each_line.find { |l| l.start_with?("version:") }
+  UI.user_error!("version: line missing in #{pubspec_path}") if line.nil?
+
+  raw = line.split(":", 2)[1].to_s.strip
+  name, build = raw.split("+", 2)
+  [name, build.to_i]
+end
+
+def nexus_testflight_max_build_number(api_key)
+  latest_testflight_build_number(
+    api_key: api_key,
+    app_identifier: NEXUS_APP_IDENTIFIER,
+    initial_build_number: 0
+  ).to_i
+rescue StandardError => e
+  UI.important("Could not read TestFlight build number: #{e.message}")
+  0
+end
+
+def nexus_app_store_connect_max_build_number(api_key)
+  version_name, = nexus_pubspec_version_parts
+  app_store_build_number(
+    api_key: api_key,
+    app_identifier: NEXUS_APP_IDENTIFIER,
+    version: version_name,
+    live: false
+  ).to_i
+rescue StandardError => e
+  UI.important("Could not read App Store build number for #{version_name}: #{e.message}")
+  0
+end
+
+def nexus_resolve_ios_build_number
+  api_key = nexus_app_store_connect_api_key
+  version_name, pubspec_build = nexus_pubspec_version_parts
+
+  tf_max = nexus_testflight_max_build_number(api_key)
+  store_max = nexus_app_store_connect_max_build_number(api_key)
+  run_number = ENV["GITHUB_RUN_NUMBER"].to_i
+  absolute_floor = ENV["IOS_MIN_BUILD_NUMBER"].to_i
+  absolute_floor = 12 if absolute_floor <= 0
+
+  candidates = [tf_max + 1, store_max + 1, pubspec_build, absolute_floor]
+  candidates << run_number if run_number.positive?
+  next_build = candidates.max
+
+  UI.message("TestFlight max build: #{tf_max}, App Store max (#{version_name}): #{store_max}")
+  UI.success(
+    "iOS CFBundleVersion resolved: #{next_build} " \
+      "(candidates: tf+1=#{tf_max + 1}, store+1=#{store_max + 1}, pubspec=#{pubspec_build}, " \
+      "floor=#{absolute_floor}, run=#{run_number.positive? ? run_number : 'n/a'})"
+  )
+
+  if is_ci && next_build <= 11
+    UI.user_error!("Resolved build number #{next_build} is not greater than uploaded build 11 — check ASC API key permissions.")
+  end
+
+  next_build
+end
+
+def nexus_export_ios_build_number_for_ci!(build_number)
+  github_output = ENV["GITHUB_OUTPUT"].to_s.strip
+  unless github_output.empty?
+    File.open(github_output, "a") { |f| f.puts "build_number=#{build_number}" }
+    return
+  end
+
+  UI.message("Resolved iOS build number: #{build_number} (GITHUB_OUTPUT not set; pass --build-number locally)")
+end
+
 def nexus_normalize_match_git_env!
   url = ENV["MATCH_GIT_URL"].to_s.strip
   url = NEXUS_MATCH_GIT_URL_DEFAULT if url.empty?
@@ -443,6 +515,19 @@ def write_export_options_plist!(profile_name:, team_id:)
 end
 
 platform :ios do
+  desc "Resolve monotonic iOS CFBundleVersion from App Store Connect + pubspec; writes build_number to GITHUB_OUTPUT"
+  lane :ci_ios_build_number do
+    nexus_normalize_asc_env!
+    build_number = nexus_resolve_ios_build_number
+    nexus_export_ios_build_number_for_ci!(build_number)
+    build_number
+  end
+
+  desc "Alias for ci_ios_build_number (legacy CI step name)"
+  lane :ci_build_number do
+    ci_ios_build_number
+  end
+
   desc "Create/unlock ephemeral CI keychain (run before match on GitHub Actions)"
   lane :ci_keychain do
     nexus_validate_match_env!
@@ -567,11 +652,24 @@ platform :ios do
     export_plist = File.expand_path("../ExportOptions.plist", __dir__)
     UI.user_error!("ExportOptions.plist missing after sign.") unless File.exist?(export_plist)
 
+    version_name, _pubspec_build = nexus_pubspec_version_parts
+    build_number = ENV["IOS_BUILD_NUMBER"].to_s.strip
+    build_number = nexus_resolve_ios_build_number.to_s if build_number.empty?
+    UI.user_error!("Resolved iOS build number is empty.") if build_number.empty?
+
     mobile_root = File.expand_path("../..", __dir__)
     Dir.chdir(mobile_root) do
       nexus_refresh_ci_keychain_search_list! if is_ci
       sh("flutter", "pub", "get")
-      sh("flutter", "build", "ipa", "--release", "--export-options-plist=ios/ExportOptions.plist")
+      sh(
+        "flutter",
+        "build",
+        "ipa",
+        "--release",
+        "--build-name=#{version_name}",
+        "--build-number=#{build_number}",
+        "--export-options-plist=ios/ExportOptions.plist"
+      )
     end
   end
 
@@ -597,6 +695,7 @@ platform :ios do
       ipa: ipa_path,
       skip_metadata: true,
       skip_screenshots: true,
+      force: true,
       submit_for_review: false,
       run_precheck_before_submit: false,
       precheck_include_in_app_purchases: false
