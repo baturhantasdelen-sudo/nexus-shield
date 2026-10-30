@@ -16,12 +16,13 @@ void main() {
 
     expect(find.text('Personal Guard'), findsOneWidget);
     expect(find.textContaining('Kalkanı Devreye Al'), findsOneWidget);
-    expect(find.text('360° Koruma Sütunları'), findsOneWidget);
+    expect(find.text('Komuta modülleri'), findsOneWidget);
+    expect(find.text('Otomatik Tam Koruma'), findsOneWidget);
     await tester.scrollUntilVisible(
-      find.text('Canlı denetim akışı'),
+      find.text('Canlı müdahale günlüğü'),
       120,
       scrollable: find.byType(Scrollable).first,
     );
-    expect(find.text('Canlı denetim akışı'), findsOneWidget);
+    expect(find.text('Canlı müdahale günlüğü'), findsOneWidget);
   });
 }

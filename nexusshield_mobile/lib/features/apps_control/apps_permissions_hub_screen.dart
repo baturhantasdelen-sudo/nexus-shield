@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/models/app_permission_report.dart';
 import '../../theme/app_theme.dart';
+import '../../navigation/nexus_navigation.dart';
 import '../../widgets/nexus_screen_header.dart';
 import '../permissions/permission_scan_provider.dart';
 import 'apps_control_provider.dart';
@@ -29,9 +30,8 @@ class _AppsPermissionsHubScreenState
       _AppsFilter.all => scan.reports,
     };
 
-    return Scaffold(
-      backgroundColor: NexusBrand.deepSlate,
-      appBar: AppBar(title: const Text('Uygulama & İzin Merkezi')),
+    return NexusSubScreenScaffold(
+      title: 'Uygulama & İzin Merkezi',
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

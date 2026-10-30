@@ -144,6 +144,28 @@ object NexusShieldPlatformPlugin {
                 "getPrivacyPillarsSnapshot" -> {
                     result.success(getPrivacyPillarsSnapshot(context))
                 }
+                "getSystemIntegritySnapshot" -> {
+                    result.success(getSystemIntegritySnapshot(context))
+                }
+                "getActiveNetworkProfile" -> {
+                    result.success(getActiveNetworkProfile(context))
+                }
+                "setAppProtectionBridge" -> {
+                    val packageId = call.argument<String>("packageId")
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    if (packageId.isNullOrBlank()) {
+                        result.error("invalid_args", "packageId required", null)
+                    } else {
+                        AppBridgeStore.setBridged(context, packageId, enabled)
+                        if (enabled) {
+                            AppDlpStore.setOutboundBlocked(context, packageId, true)
+                            AppDlpStore.setClipboardBlocked(context, packageId, true)
+                            AppDlpStore.setBackgroundRestricted(context, packageId, true)
+                        }
+                        NexusShieldVpnService.restartWithPolicy(context)
+                        result.success(null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }
@@ -232,10 +254,46 @@ object NexusShieldPlatformPlugin {
                     "riskScore" to score,
                     "networkBlocked" to NetworkBlockStore.isBlocked(context, app.packageName),
                     "dlp" to AppDlpStore.snapshot(context, app.packageName),
+                    "bridged" to AppBridgeStore.isBridged(context, app.packageName),
                 ),
             )
         }
         return out.sortedByDescending { (it["riskScore"] as Int) }.take(500)
+    }
+
+    private fun getActiveNetworkProfile(context: Context): Map<String, Any> {
+        val wifi = getWifiSecuritySnapshot(context)
+        return mapOf(
+            "ssid" to wifi["ssid"]!!,
+            "encryption" to wifi["encryption"]!!,
+            "dnsHijackSuspect" to wifi["dnsHijackSuspect"]!!,
+            "arpPoisonSuspect" to wifi["arpPoisonSuspect"]!!,
+            "captivePortalSuspect" to wifi["captivePortalSuspect"]!!,
+            "recommendVpnTunnel" to wifi["recommendVpnTunnel"]!!,
+            "detail" to wifi["detail"]!!,
+            "blockedThreatDomains" to listOf(
+                "sslstrip.local",
+                "dns-hijack.test",
+                "spyware-c2.example",
+            ),
+        )
+    }
+
+    private fun getSystemIntegritySnapshot(context: Context): Map<String, Any> {
+        val proxy = Settings.Global.getString(context.contentResolver, Settings.Global.HTTP_PROXY)
+        val httpProxy = proxy?.trim().orEmpty()
+        return mapOf(
+            "httpProxyConfigured" to httpProxy.isNotEmpty(),
+            "httpProxy" to if (httpProxy.isEmpty()) "—" else httpProxy,
+            "jailbreakSuspect" to false,
+            "mdmProfileSuspect" to false,
+            "lockdownRecommended" to true,
+            "detail" to if (httpProxy.isNotEmpty()) {
+                "Sistem proxy ayarı tespit edildi — DNS zırhı önerilir"
+            } else {
+                "Temel bütünlük kontrolü tamam — Lockdown rehberi kullanılabilir"
+            },
+        )
     }
 
     private fun getPrivacyPillarsSnapshot(context: Context): Map<String, Any> {

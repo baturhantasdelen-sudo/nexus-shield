@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/shield_providers.dart';
 import '../theme/app_theme.dart';
+import '../navigation/nexus_navigation.dart';
 import '../widgets/nexus_screen_header.dart';
 import '../features/ai_shield/ai_shield_screen.dart';
 import '../features/call_fraud/call_fraud_screen.dart';
@@ -17,8 +18,9 @@ class SettingsScreen extends ConsumerWidget {
     final settings = ref.watch(shieldSettingsProvider);
     final notifier = ref.read(shieldSettingsProvider.notifier);
 
-    return SafeArea(
-      child: ListView(
+    return NexusSubScreenScaffold(
+      title: 'Ayarlar',
+      body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           const NexusScreenHeader(

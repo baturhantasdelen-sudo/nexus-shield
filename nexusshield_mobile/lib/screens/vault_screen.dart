@@ -5,6 +5,7 @@ import 'package:local_auth/local_auth.dart';
 import '../providers/api_discovery_provider.dart';
 import '../providers/vault_provider.dart';
 import '../theme/app_theme.dart';
+import '../navigation/nexus_navigation.dart';
 import '../widgets/nexus_screen_header.dart';
 
 class VaultScreen extends ConsumerStatefulWidget {
@@ -140,8 +141,9 @@ class _VaultScreenState extends ConsumerState<VaultScreen> {
   Widget build(BuildContext context) {
     final discovery = ref.watch(apiDiscoveryProvider);
 
-    return SafeArea(
-      child: _loading
+    return NexusSubScreenScaffold(
+      title: 'Şifreli Kasa',
+      body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(20),

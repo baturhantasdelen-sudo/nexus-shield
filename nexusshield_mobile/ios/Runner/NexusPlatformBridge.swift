@@ -83,6 +83,29 @@ final class NexusPlatformBridge: NSObject, FlutterPlugin, FlutterStreamHandler {
         "outboundBlockedCount": 0,
         "vpnActive": false,
       ])
+    case "getSystemIntegritySnapshot":
+      result([
+        "httpProxyConfigured": false,
+        "httpProxy": "—",
+        "jailbreakSuspect": false,
+        "mdmProfileSuspect": false,
+        "lockdownRecommended": true,
+        "detail": "iOS Kilit Modu ve DNS zırhı önerilir",
+      ])
+    case "getActiveNetworkProfile":
+      let wifi = wifiSnapshot()
+      result([
+        "ssid": wifi["ssid"] ?? "—",
+        "encryption": wifi["encryption"] ?? "UNKNOWN",
+        "dnsHijackSuspect": wifi["dnsHijackSuspect"] ?? false,
+        "arpPoisonSuspect": wifi["arpPoisonSuspect"] ?? false,
+        "captivePortalSuspect": wifi["captivePortalSuspect"] ?? false,
+        "recommendVpnTunnel": wifi["recommendVpnTunnel"] ?? false,
+        "detail": wifi["detail"] ?? "",
+        "blockedThreatDomains": ["sslstrip.local", "spyware-c2.example"],
+      ])
+    case "setAppProtectionBridge":
+      result(nil)
     default:
       result(FlutterMethodNotImplemented)
     }

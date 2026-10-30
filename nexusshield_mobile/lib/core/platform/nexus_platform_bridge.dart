@@ -116,6 +116,30 @@ abstract final class NexusPlatformBridge {
     return Map<String, dynamic>.from(result ?? const {});
   }
 
+  static Future<Map<String, dynamic>> getSystemIntegritySnapshot() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getSystemIntegritySnapshot',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<Map<String, dynamic>> getActiveNetworkProfile() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getActiveNetworkProfile',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<void> setAppProtectionBridge({
+    required String packageId,
+    required bool enabled,
+  }) async {
+    await _method.invokeMethod<void>('setAppProtectionBridge', {
+      'packageId': packageId,
+      'enabled': enabled,
+    });
+  }
+
   static Future<List<Map<String, dynamic>>> scanInstalledAiClients() async {
     final result = await _method.invokeMethod<List<Object?>>(
       'scanInstalledAiClients',

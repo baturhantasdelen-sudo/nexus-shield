@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/shield_providers.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/nexus_minimal_tech_logo.dart';
+import '../auto_protection/auto_protection_wizard_provider.dart';
 import '../traffic_guard/traffic_guard_setup_sheet.dart';
 import '../traffic_guard/traffic_guard_provider.dart';
 
@@ -100,6 +101,20 @@ class _ActiveShieldCoreState extends ConsumerState<ActiveShieldCore>
             },
             icon: Icon(active ? Icons.verified_user : Icons.shield_outlined),
             label: Text(active ? 'Korumayı sürdür' : 'Tam korumayı aç'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () async {
+              ref.read(autoProtectionWizardProvider.notifier).reset();
+              await ref.read(autoProtectionWizardProvider.notifier).runFullAutoProtection();
+              if (!context.mounted) return;
+              if (ref.read(shieldSettingsProvider).localVpn &&
+                  ref.read(trafficGuardProvider.notifier).needsSetup) {
+                await showTrafficGuardSetupSheet(context);
+              }
+            },
+            icon: const Icon(Icons.auto_mode),
+            label: const Text('Otomatik Tam Koruma'),
           ),
           if (guard.needsVpnConsent && active)
             TextButton(

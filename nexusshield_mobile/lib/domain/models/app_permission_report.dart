@@ -80,6 +80,7 @@ class AppPermissionReport {
     required this.riskScore,
     this.networkBlocked = false,
     this.dlp = const AppDlpPolicy(),
+    this.bridged = false,
   });
 
   final String packageId;
@@ -89,6 +90,7 @@ class AppPermissionReport {
   final int riskScore;
   final bool networkBlocked;
   final AppDlpPolicy dlp;
+  final bool bridged;
 
   bool get isRisky =>
       riskTier == AppPermissionRiskTier.high ||
@@ -115,6 +117,7 @@ class AppPermissionReport {
       dlp: AppDlpPolicy.fromMap(
         Map<String, dynamic>.from(map['dlp'] as Map? ?? const {}),
       ),
+      bridged: map['bridged'] == true,
     );
   }
 

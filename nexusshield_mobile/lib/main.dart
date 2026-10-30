@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/ai_guard/api_key_leak_shield_provider.dart';
 import 'features/banking/banking_shield_provider.dart';
+import 'features/bridge/app_protection_bridge_provider.dart';
 import 'features/call_fraud/call_fraud_provider.dart';
+import 'features/defense/advanced_threat_defense_provider.dart';
+import 'features/defense/system_integrity_provider.dart';
 import 'features/live_shield/live_feed_provider.dart';
 import 'features/live_shield/live_shield_screen.dart';
 import 'features/live_shield/privacy_pillars_provider.dart';
@@ -11,12 +15,13 @@ import 'features/permissions/permission_scan_provider.dart';
 import 'features/remote_access/remote_access_provider.dart';
 import 'features/traffic_guard/traffic_guard_provider.dart';
 import 'features/vault/smart_vault_sync_provider.dart';
+import 'navigation/nexus_navigation.dart';
 import 'providers/shield_providers.dart';
 import 'providers/vault_provider.dart';
 import 'screens/settings_screen.dart';
 import 'screens/vault_screen.dart';
 import 'theme/app_theme.dart';
-import 'widgets/nexus_minimal_tech_logo.dart';
+import 'widgets/nexus_global_prompts.dart';
 import 'widgets/nexus_splash_overlay.dart';
 
 void main() {
@@ -60,38 +65,30 @@ class _LiveShieldShell extends ConsumerWidget {
     ref.watch(smartVaultSyncProvider);
     ref.watch(liveFeedProvider);
     ref.watch(privacyPillarsProvider);
+    ref.watch(advancedThreatDefenseProvider);
+    ref.watch(systemIntegrityProvider);
+    ref.watch(appProtectionBridgeProvider);
+    ref.watch(permissionScanProvider);
+    ref.watch(apiKeyLeakShieldProvider);
 
-    return Scaffold(
-      backgroundColor: NexusBrand.deepSlate,
-      appBar: AppBar(
-        title: const Text('Personal Guard'),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: NexusMinimalTechLogo(
-            size: 36,
-            active: shieldOn,
-            pulseWhenActive: true,
-          ),
-        ),
-        leadingWidth: 52,
+    return NexusGlobalPrompts(
+      child: NexusAppShell(
+        title: 'Personal Guard',
+        shieldActive: shieldOn,
         actions: [
           IconButton(
             tooltip: 'Vault',
             icon: const Icon(Icons.key_outlined),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const VaultScreen()),
-            ),
+            onPressed: () => pushNexusSubRoute(context, const VaultScreen()),
           ),
           IconButton(
             tooltip: 'Ayarlar',
             icon: const Icon(Icons.tune_outlined),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-            ),
+            onPressed: () => pushNexusSubRoute(context, const SettingsScreen()),
           ),
         ],
+        body: const LiveShieldScreen(),
       ),
-      body: const LiveShieldScreen(),
     );
   }
 }
