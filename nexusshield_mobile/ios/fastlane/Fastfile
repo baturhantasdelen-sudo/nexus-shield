@@ -2,6 +2,9 @@ default_platform(:ios)
 
 NEXUS_APP_IDENTIFIER = "com.nexusshield.guard"
 NEXUS_MATCH_GIT_URL_DEFAULT = "https://github.com/baturhantasdelen-sudo/nexus-shield-match.git"
+# App Store Connect / TestFlight already has build 11 — every IPA must exceed this floor.
+NEXUS_ASC_UPLOADED_BUILD_FLOOR = 11
+NEXUS_IOS_BUILD_FLOOR = 12
 
 # Fastlane actions (match, upload_to_app_store, etc.) auto-map APP_STORE_CONNECT_API_KEY_PATH
 # to the api_key_path option. Passing api_key: at the same time raises:
@@ -100,9 +103,9 @@ def nexus_resolve_ios_build_number
   store_max = nexus_app_store_connect_max_build_number(api_key)
   run_number = ENV["GITHUB_RUN_NUMBER"].to_i
   absolute_floor = ENV["IOS_MIN_BUILD_NUMBER"].to_i
-  absolute_floor = 12 if absolute_floor <= 0
+  absolute_floor = NEXUS_IOS_BUILD_FLOOR if absolute_floor <= NEXUS_ASC_UPLOADED_BUILD_FLOOR
 
-  candidates = [tf_max + 1, store_max + 1, pubspec_build, absolute_floor]
+  candidates = [tf_max + 1, store_max + 1, pubspec_build, absolute_floor, NEXUS_ASC_UPLOADED_BUILD_FLOOR + 1]
   candidates << run_number if run_number.positive?
   next_build = candidates.max
 
@@ -113,11 +116,33 @@ def nexus_resolve_ios_build_number
       "floor=#{absolute_floor}, run=#{run_number.positive? ? run_number : 'n/a'})"
   )
 
-  if is_ci && next_build <= 11
-    UI.user_error!("Resolved build number #{next_build} is not greater than uploaded build 11 — check ASC API key permissions.")
+  if next_build <= NEXUS_ASC_UPLOADED_BUILD_FLOOR
+    UI.user_error!(
+      "Resolved build number #{next_build} is not greater than App Store / TestFlight floor " \
+        "#{NEXUS_ASC_UPLOADED_BUILD_FLOOR} — check ASC API key permissions or pubspec +N."
+    )
   end
 
   next_build
+end
+
+def nexus_build_number_for_flutter_ipa
+  resolved = nexus_resolve_ios_build_number
+  env_build = ENV["IOS_BUILD_NUMBER"].to_s.strip.to_i
+  final_build = [resolved, env_build].max
+  final_build = NEXUS_IOS_BUILD_FLOOR if final_build < NEXUS_IOS_BUILD_FLOOR
+
+  if final_build <= NEXUS_ASC_UPLOADED_BUILD_FLOOR
+    UI.user_error!(
+      "flutter build ipa build number #{final_build} must exceed ASC uploaded build #{NEXUS_ASC_UPLOADED_BUILD_FLOOR}."
+    )
+  end
+
+  UI.success(
+    "flutter build ipa will use CFBundleVersion=#{final_build} " \
+      "(resolved=#{resolved}, IOS_BUILD_NUMBER=#{env_build.positive? ? env_build : 'n/a'})"
+  )
+  final_build
 end
 
 def nexus_export_ios_build_number_for_ci!(build_number)
@@ -653,9 +678,7 @@ platform :ios do
     UI.user_error!("ExportOptions.plist missing after sign.") unless File.exist?(export_plist)
 
     version_name, _pubspec_build = nexus_pubspec_version_parts
-    build_number = ENV["IOS_BUILD_NUMBER"].to_s.strip
-    build_number = nexus_resolve_ios_build_number.to_s if build_number.empty?
-    UI.user_error!("Resolved iOS build number is empty.") if build_number.empty?
+    build_number = nexus_build_number_for_flutter_ipa.to_s
 
     mobile_root = File.expand_path("../..", __dir__)
     Dir.chdir(mobile_root) do

@@ -7,6 +7,7 @@ import '../defense/advanced_threat_defense_provider.dart';
 import '../defense/system_integrity_provider.dart';
 import '../network/wifi_security_provider.dart';
 import '../traffic_guard/traffic_guard_setup_sheet.dart';
+import '../proof/how_it_protects_proof_sheet.dart';
 import '../traffic_guard/traffic_guard_provider.dart';
 
 class NetworkAttackShieldScreen extends ConsumerWidget {
@@ -45,6 +46,12 @@ class NetworkAttackShieldScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: () => showHowItProtectsProofSheet(context),
+            icon: const Icon(Icons.fact_check_outlined),
+            label: const Text('Nasıl koruyor? (canlı kanıt)'),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () async {
               await ref.read(advancedThreatDefenseProvider.notifier).refresh();

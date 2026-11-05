@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_theme.dart';
 import '../widgets/nexus_minimal_tech_logo.dart';
+import '../widgets/nexus_vector_back_button.dart';
 
 /// Home shell — karargah üst bar (geri yok).
 class NexusAppShell extends StatelessWidget {
@@ -65,7 +66,8 @@ class NexusSubScreenScaffold extends StatelessWidget {
       child: Scaffold(
         backgroundColor: NexusBrand.deepSlate,
         appBar: AppBar(
-          leading: NexusSubScreenBackButton(onPressed: () => popNexusRoute(context)),
+          leading: NexusVectorBackButton(onPressed: () => popNexusRoute(context)),
+          leadingWidth: 56,
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -80,25 +82,6 @@ class NexusSubScreenScaffold extends StatelessWidget {
         ),
         floatingActionButton: floatingActionButton,
         body: body,
-      ),
-    );
-  }
-}
-
-class NexusSubScreenBackButton extends StatelessWidget {
-  const NexusSubScreenBackButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: onPressed,
-      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
-      label: const Text('Karargaha Dön'),
-      style: TextButton.styleFrom(
-        foregroundColor: NexusBrand.cyberCyan,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
       ),
     );
   }

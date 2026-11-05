@@ -13,12 +13,14 @@ class PermissionScanState {
     this.lastScan,
     this.scanning = false,
     this.error,
+    this.includeSystemPackages = false,
   });
 
   final List<AppPermissionReport> reports;
   final DateTime? lastScan;
   final bool scanning;
   final String? error;
+  final bool includeSystemPackages;
 
   List<AppPermissionReport> get risky =>
       reports.where((r) => r.isRisky).toList(growable: false);
@@ -28,12 +30,14 @@ class PermissionScanState {
     DateTime? lastScan,
     bool? scanning,
     String? error,
+    bool? includeSystemPackages,
   }) {
     return PermissionScanState(
       reports: reports ?? this.reports,
       lastScan: lastScan ?? this.lastScan,
       scanning: scanning ?? this.scanning,
       error: error,
+      includeSystemPackages: includeSystemPackages ?? this.includeSystemPackages,
     );
   }
 }
@@ -45,10 +49,13 @@ class PermissionScanController extends Notifier<PermissionScanState> {
     return const PermissionScanState();
   }
 
-  Future<void> scan() async {
-    state = state.copyWith(scanning: true, error: null);
+  Future<void> scan({bool? includeSystemPackages}) async {
+    final includeSystem = includeSystemPackages ?? state.includeSystemPackages;
+    state = state.copyWith(scanning: true, error: null, includeSystemPackages: includeSystem);
     try {
-      var raw = await NexusPlatformBridge.scanInstalledAppPermissions();
+      var raw = await NexusPlatformBridge.scanInstalledAppPermissions(
+        includeSystemPackages: includeSystem,
+      );
       if (raw.isEmpty) {
         raw = _fallbackFromProtectionProfiles(ref.read(appProtectionProvider));
       }
@@ -58,6 +65,7 @@ class PermissionScanController extends Notifier<PermissionScanState> {
         reports: reports,
         lastScan: DateTime.now(),
         scanning: false,
+        includeSystemPackages: includeSystem,
       );
     } catch (e) {
       state = state.copyWith(

@@ -6,37 +6,38 @@ import '../live_shield/live_feed_provider.dart';
 import '../permissions/permission_scan_provider.dart';
 import 'app_catalog.dart';
 
-class BridgeCandidate {
-  const BridgeCandidate({
-    required this.packageId,
-    required this.displayName,
-    required this.criticality,
-    required this.bridged,
-  });
+class BridgeEntry {
+  const BridgeEntry({required this.report});
 
-  final String packageId;
-  final String displayName;
-  final AppCriticalityClass criticality;
-  final bool bridged;
+  final AppPermissionReport report;
+
+  AppCriticalityClass get criticality => AppCatalog.classify(report.packageId);
 }
 
 class AppProtectionBridgeState {
   const AppProtectionBridgeState({
-    this.candidates = const [],
+    this.entries = const [],
     this.pendingPrompt,
+    this.bridgingAll = false,
   });
 
-  final List<BridgeCandidate> candidates;
-  final BridgeCandidate? pendingPrompt;
+  final List<BridgeEntry> entries;
+  final BridgeEntry? pendingPrompt;
+  final bool bridgingAll;
+
+  int get unbridgedLaunchableCount =>
+      entries.where((e) => e.report.launchable && !e.report.bridged).length;
 
   AppProtectionBridgeState copyWith({
-    List<BridgeCandidate>? candidates,
-    BridgeCandidate? pendingPrompt,
+    List<BridgeEntry>? entries,
+    BridgeEntry? pendingPrompt,
     bool clearPrompt = false,
+    bool? bridgingAll,
   }) {
     return AppProtectionBridgeState(
-      candidates: candidates ?? this.candidates,
+      entries: entries ?? this.entries,
       pendingPrompt: clearPrompt ? null : (pendingPrompt ?? this.pendingPrompt),
+      bridgingAll: bridgingAll ?? this.bridgingAll,
     );
   }
 }
@@ -51,38 +52,59 @@ class AppProtectionBridgeController extends Notifier<AppProtectionBridgeState> {
   Future<void> syncFromDevice() async {
     await ref.read(permissionScanProvider.notifier).scan();
     final reports = ref.read(permissionScanProvider).reports;
-    final candidates = <BridgeCandidate>[];
-    BridgeCandidate? prompt;
-    for (final r in reports) {
-      final c = _fromReport(r);
-      if (c.criticality == AppCriticalityClass.other) continue;
-      candidates.add(c);
-      if (!c.bridged && prompt == null && c.criticality != AppCriticalityClass.social) {
-        prompt = c;
+    final entries = reports.map((r) => BridgeEntry(report: r)).toList(growable: false);
+    BridgeEntry? prompt;
+    for (final e in entries) {
+      if (!e.report.bridged &&
+          prompt == null &&
+          e.criticality != AppCriticalityClass.social &&
+          e.criticality != AppCriticalityClass.other) {
+        prompt = e;
       }
     }
-    state = AppProtectionBridgeState(candidates: candidates, pendingPrompt: prompt);
+    state = AppProtectionBridgeState(entries: entries, pendingPrompt: prompt);
   }
 
-  BridgeCandidate _fromReport(AppPermissionReport r) {
-    return BridgeCandidate(
-      packageId: r.packageId,
-      displayName: r.displayName,
-      criticality: AppCatalog.classify(r.packageId),
-      bridged: r.bridged,
-    );
-  }
-
-  Future<void> enableBridge(BridgeCandidate c) async {
+  Future<void> enableBridge(BridgeEntry entry) async {
+    final r = entry.report;
     await NexusPlatformBridge.setAppProtectionBridge(
-      packageId: c.packageId,
+      packageId: r.packageId,
       enabled: true,
     );
     ref.read(liveFeedProvider.notifier).push(
-          '${c.displayName}: Koruma köprüsü aktif • korunuyor',
+          '${r.displayName}: Koruma köprüsü aktif • korunuyor',
         );
     await syncFromDevice();
     state = state.copyWith(clearPrompt: true);
+  }
+
+  Future<void> bridgeAllLaunchable() async {
+    state = state.copyWith(bridgingAll: true);
+    final targets = state.entries
+        .where((e) => e.report.launchable && !e.report.bridged)
+        .toList(growable: false);
+    for (final e in targets) {
+      await NexusPlatformBridge.setAppProtectionBridge(
+        packageId: e.report.packageId,
+        enabled: true,
+      );
+    }
+    ref.read(liveFeedProvider.notifier).push(
+          'Toplu köprü: ${targets.length} uygulama koruma altına alındı',
+        );
+    await syncFromDevice();
+    state = state.copyWith(bridgingAll: false);
+  }
+
+  Future<void> addManualBridgeTarget(String packageOrBundleId, String displayName) async {
+    await NexusPlatformBridge.setAppProtectionBridge(
+      packageId: packageOrBundleId.trim(),
+      enabled: true,
+    );
+    ref.read(liveFeedProvider.notifier).push(
+          '$displayName manuel kalkan köprüsüne eklendi',
+        );
+    await syncFromDevice();
   }
 
   void dismissPrompt() => state = state.copyWith(clearPrompt: true);

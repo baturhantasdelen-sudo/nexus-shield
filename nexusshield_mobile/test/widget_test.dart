@@ -16,8 +16,14 @@ void main() {
 
     expect(find.text('Personal Guard'), findsOneWidget);
     expect(find.textContaining('Kalkanı Devreye Al'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Komuta modülleri'),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Komuta modülleri'), findsOneWidget);
     expect(find.text('Otomatik Tam Koruma'), findsOneWidget);
+    expect(find.text('Korumayı Canlı Test Et'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('Canlı müdahale günlüğü'),
       120,

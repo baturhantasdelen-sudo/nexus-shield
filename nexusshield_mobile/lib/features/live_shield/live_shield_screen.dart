@@ -10,6 +10,7 @@ import '../modules/hardware_privacy_module_screen.dart';
 import '../modules/network_attack_shield_screen.dart';
 import 'active_shield_core.dart';
 import 'live_feed_provider.dart';
+import '../proof/live_inspect_card.dart';
 import 'privacy_pillars_provider.dart';
 
 class LiveShieldScreen extends ConsumerWidget {
@@ -36,6 +37,8 @@ class LiveShieldScreen extends ConsumerWidget {
         ],
         const SizedBox(height: 12),
         _SecurityStatusStrip(pillars: pillars),
+        const SizedBox(height: 12),
+        const LiveInspectCard(),
         const SizedBox(height: 20),
         Text(
           'Komuta modülleri',

@@ -13,9 +13,16 @@ abstract final class NexusPlatformBridge {
         );
   }
 
-  static Future<List<Map<String, dynamic>>> scanInstalledAppPermissions() async {
+  static Future<List<Map<String, dynamic>>> scanInstalledAppPermissions({
+    bool includeSystemPackages = false,
+    bool includeIcons = true,
+  }) async {
     final result = await _method.invokeMethod<List<Object?>>(
       'scanInstalledAppPermissions',
+      {
+        'includeSystemPackages': includeSystemPackages,
+        'includeIcons': includeIcons,
+      },
     );
     if (result == null) return const [];
     return result
@@ -138,6 +145,20 @@ abstract final class NexusPlatformBridge {
       'packageId': packageId,
       'enabled': enabled,
     });
+  }
+
+  static Future<Map<String, dynamic>> getProtectionProofSnapshot() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'getProtectionProofSnapshot',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
+  }
+
+  static Future<Map<String, dynamic>> runProtectionSelfTest() async {
+    final result = await _method.invokeMethod<Map<Object?, Object?>>(
+      'runProtectionSelfTest',
+    );
+    return Map<String, dynamic>.from(result ?? const {});
   }
 
   static Future<List<Map<String, dynamic>>> scanInstalledAiClients() async {

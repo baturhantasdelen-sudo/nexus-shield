@@ -76,5 +76,61 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>whatsapp</string>
+			<string>tg</string>
+			<string>telegram</string>
+			<string>instagram</string>
+			<string>tiktok</string>
+			<string>twitter</string>
+			<string>x</string>
+			<string>youtube</string>
+			<string>fb</string>
+			<string>facebook</string>
+			<string>googlechrome</string>
+			<string>googlechromes</string>
+			<string>comgooglemaps</string>
+			<string>chatgpt</string>
+			<string>claude</string>
+			<string>gemini</string>
+			<string>copilot</string>
+			<string>spotify</string>
+			<string>snapchat</string>
+			<string>linkedin</string>
+			<string>reddit</string>
+			<string>discord</string>
+			<string>signal</string>
+			<string>viber</string>
+			<string>line</string>
+			<string>skype</string>
+			<string>zoomus</string>
+			<string>teams</string>
+			<string>slack</string>
+			<string>paypal</string>
+			<string>venmo</string>
+			<string>coinbase</string>
+			<string>binance</string>
+			<string>tronlink</string>
+			<string>metamask</string>
+			<string>trust</string>
+			<string>isbank</string>
+			<string>garanti</string>
+			<string>yapikredi</string>
+			<string>akbank</string>
+			<string>ziraat</string>
+			<string>vakifbank</string>
+			<string>enpara</string>
+			<string>papara</string>
+			<string>edevlet</string>
+			<string>turkiye</string>
+			<string>n11</string>
+			<string>hepsiburada</string>
+			<string>trendyol</string>
+			<string>getir</string>
+			<string>yemeksepeti</string>
+			<string>uber</string>
+			<string>lyft</string>
+		</array>
 	</dict>
 </plist>

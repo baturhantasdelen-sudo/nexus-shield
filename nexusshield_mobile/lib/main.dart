@@ -12,6 +12,8 @@ import 'features/live_shield/live_shield_screen.dart';
 import 'features/live_shield/privacy_pillars_provider.dart';
 import 'features/network/wifi_security_provider.dart';
 import 'features/permissions/permission_scan_provider.dart';
+import 'features/proof/protection_proof_provider.dart';
+import 'features/proof/protection_live_test_provider.dart';
 import 'features/remote_access/remote_access_provider.dart';
 import 'features/traffic_guard/traffic_guard_provider.dart';
 import 'features/vault/smart_vault_sync_provider.dart';
@@ -70,6 +72,8 @@ class _LiveShieldShell extends ConsumerWidget {
     ref.watch(appProtectionBridgeProvider);
     ref.watch(permissionScanProvider);
     ref.watch(apiKeyLeakShieldProvider);
+    ref.watch(protectionProofProvider);
+    ref.watch(protectionLiveTestProvider);
 
     return NexusGlobalPrompts(
       child: NexusAppShell(

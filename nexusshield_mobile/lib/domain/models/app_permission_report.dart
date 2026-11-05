@@ -15,6 +15,7 @@ enum SensitivePermissionKind {
       'location' => SensitivePermissionKind.location,
       'network' => SensitivePermissionKind.network,
       'media' => SensitivePermissionKind.media,
+      'clipboard' => SensitivePermissionKind.unknown,
       _ => SensitivePermissionKind.unknown,
     };
   }
@@ -81,6 +82,10 @@ class AppPermissionReport {
     this.networkBlocked = false,
     this.dlp = const AppDlpPolicy(),
     this.bridged = false,
+    this.versionName = '',
+    this.launchable = true,
+    this.systemPackage = false,
+    this.iconPngBase64,
   });
 
   final String packageId;
@@ -91,6 +96,10 @@ class AppPermissionReport {
   final bool networkBlocked;
   final AppDlpPolicy dlp;
   final bool bridged;
+  final String versionName;
+  final bool launchable;
+  final bool systemPackage;
+  final String? iconPngBase64;
 
   bool get isRisky =>
       riskTier == AppPermissionRiskTier.high ||
@@ -118,10 +127,24 @@ class AppPermissionReport {
         Map<String, dynamic>.from(map['dlp'] as Map? ?? const {}),
       ),
       bridged: map['bridged'] == true,
+      versionName: '${map['versionName'] ?? ''}',
+      launchable: map['launchable'] != false,
+      systemPackage: map['systemPackage'] == true,
+      iconPngBase64: map['iconPngBase64'] as String?,
     );
   }
 
-  AppPermissionReport copyWith({bool? networkBlocked, AppDlpPolicy? dlp}) {
+  List<String> get bridgeRuleLabelsTr {
+    if (!bridged) return const [];
+    return [
+      if (dlp.outboundBlocked || networkBlocked) 'VPN soket filtresi: Aktif',
+      if (dlp.clipboardBlocked) 'Pano erişimi: Kilitli',
+      if (dlp.backgroundRestricted) 'Telemetri/izleyici engeli: Aktif',
+      if (dlp.outboundBlocked) 'Arka plan veri sızıntısı: Engelli',
+    ];
+  }
+
+  AppPermissionReport copyWith({bool? networkBlocked, AppDlpPolicy? dlp, bool? bridged}) {
     return AppPermissionReport(
       packageId: packageId,
       displayName: displayName,
@@ -130,6 +153,11 @@ class AppPermissionReport {
       riskScore: riskScore,
       networkBlocked: networkBlocked ?? this.networkBlocked,
       dlp: dlp ?? this.dlp,
+      bridged: bridged ?? this.bridged,
+      versionName: versionName,
+      launchable: launchable,
+      systemPackage: systemPackage,
+      iconPngBase64: iconPngBase64,
     );
   }
 

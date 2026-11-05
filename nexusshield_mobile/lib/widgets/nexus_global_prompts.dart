@@ -23,9 +23,9 @@ class _NexusGlobalPromptsState extends ConsumerState<NexusGlobalPrompts> {
   Widget build(BuildContext context) {
     ref.listen(appProtectionBridgeProvider, (prev, next) {
       final p = next.pendingPrompt;
-      if (p == null || p.bridged) return;
-      if (_shownBridgeId == p.packageId) return;
-      _shownBridgeId = p.packageId;
+      if (p == null || p.report.bridged) return;
+      if (_shownBridgeId == p.report.packageId) return;
+      _shownBridgeId = p.report.packageId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _showBridgeDialog(p);
@@ -45,14 +45,14 @@ class _NexusGlobalPromptsState extends ConsumerState<NexusGlobalPrompts> {
     return widget.child;
   }
 
-  Future<void> _showBridgeDialog(BridgeCandidate c) async {
+  Future<void> _showBridgeDialog(BridgeEntry c) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: NexusBrand.glassPanel,
-        title: Text('${c.displayName} tespit edildi'),
+        title: Text('${c.report.displayName} tespit edildi'),
         content: Text(
-          '${c.displayName} için arka plan veri sızıntısı, oltalama linkleri ve '
+          '${c.report.displayName} için arka plan veri sızıntısı, oltalama linkleri ve '
           'ekran okuma saldırılarına karşı Koruma Köbrüsü kurulsun mu?',
         ),
         actions: [
