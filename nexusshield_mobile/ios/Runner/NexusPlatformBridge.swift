@@ -301,7 +301,7 @@ final class NexusPlatformBridge: NSObject, FlutterPlugin, FlutterStreamHandler {
         "detail": remote["detail"] ?? "",
       ],
     ]
-    let allPassed = steps.all { ($0["passed"] as? Bool) == true }
+    let allPassed = steps.allSatisfy { ($0["passed"] as? Bool) == true }
     return [
       "steps": steps,
       "verifiedPercent": allPassed ? 100 : 75,

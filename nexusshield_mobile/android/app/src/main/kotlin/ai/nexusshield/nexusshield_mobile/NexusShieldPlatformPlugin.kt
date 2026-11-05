@@ -415,7 +415,7 @@ object NexusShieldPlatformPlugin {
             ),
             mapOf(
                 "name" to "Ekran yakalama / ADB",
-                "passed" to !(remote["screenCaptureActive"] == true) && !adb,
+                "passed" to (!(remote["screenCaptureActive"] == true) && !adb),
                 "detail" to remote["detail"]!!,
             ),
         )
